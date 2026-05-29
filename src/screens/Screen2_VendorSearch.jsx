@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
 import { getKeywordSuggestions } from '../api/gemini.js';
@@ -10,7 +10,8 @@ const FILTER_RES = ['ทุก Response', '< 12 ชม.', '< 24 ชม.', '< 3 �
 
 export default function Screen2_VendorSearch() {
   const navigate = useNavigate();
-  const { vendors, selected, toggleSelected, jobDescription, aiKeywords, setField, showToast } = useApp();
+  const { vendors, selected, toggleSelected, jobDescription, aiKeywords, setField, showToast,
+          projectId, vendorsLoading, loadVendorsFromFirestore } = useApp();
 
   const [activeTab, setActiveTab] = useState('ai');
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,13 @@ export default function Screen2_VendorSearch() {
   const [pasteLink, setPasteLink] = useState('');
 
   const selectedCount = selected.filter(Boolean).length;
+
+  // Load vendors from Firestore when a projectId is available; keep demo data as fallback
+  useEffect(() => {
+    if (projectId) {
+      loadVendorsFromFirestore(projectId);
+    }
+  }, [projectId]);
 
   const handleAISuggest = async () => {
     setLoading(true);
@@ -209,6 +217,12 @@ export default function Screen2_VendorSearch() {
         <div style={{ fontSize: 12.5, color: 'var(--t3)', marginBottom: 14 }}>
           เลือกอย่างน้อย 2 รายเพื่อเปรียบเทียบ
         </div>
+
+        {vendorsLoading && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--t3)', fontSize: 13, marginBottom: 12 }}>
+            <span className="spinner" /> กำลังโหลด vendor จาก Firestore...
+          </div>
+        )}
 
         <div className="vendor-list">
           {vendors.map((v, i) => (

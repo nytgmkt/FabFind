@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { db } from '../firebase.js';
+import { collection, addDoc, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const initialVendors = [
   {
@@ -87,6 +89,8 @@ export function AppProvider({ children }) {
     toastMsg: '',
     lbOpen: false,
     lbContent: null,
+    projectId: null,   // Firestore document ID after save
+    vendorsLoading: false,
   });
 
   const setField = useCallback((key, value) => {
@@ -114,6 +118,66 @@ export function AppProvider({ children }) {
     setState(prev => ({ ...prev, lbOpen: false, lbContent: null }));
   }, []);
 
+  // Save project + vendors to Firestore; returns the project doc ID
+  const saveProjectToFirestore = useCallback(async (projectData, vendorList) => {
+    try {
+      const projRef = await addDoc(collection(db, 'projects'), {
+        ...projectData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      // Save each vendor as a sub-document under projects/{id}/vendors
+      for (const vendor of vendorList) {
+        await setDoc(doc(db, 'projects', projRef.id, 'vendors', vendor.name), {
+          ...vendor,
+          projectId: projRef.id,
+          updatedAt: serverTimestamp(),
+        });
+      }
+      // Also mirror vendors to top-level "vendors" collection for easy querying
+      for (const vendor of vendorList) {
+        await setDoc(doc(db, 'vendors', `${projRef.id}_${vendor.name}`), {
+          ...vendor,
+          projectId: projRef.id,
+          updatedAt: serverTimestamp(),
+        });
+      }
+      setState(prev => ({ ...prev, projectId: projRef.id }));
+      return projRef.id;
+    } catch (err) {
+      console.error('Firestore save error:', err);
+      return null;
+    }
+  }, []);
+
+  // Load vendors from Firestore for a given projectId; falls back to initialVendors
+  const loadVendorsFromFirestore = useCallback(async (projectId) => {
+    setState(prev => ({ ...prev, vendorsLoading: true }));
+    try {
+      const snap = await getDocs(collection(db, 'projects', projectId, 'vendors'));
+      if (!snap.empty) {
+        const loaded = snap.docs.map(d => {
+          const data = d.data();
+          // Remove Firestore-only fields before storing in state
+          const { projectId: _pid, updatedAt: _u, ...vendor } = data;
+          return vendor;
+        });
+        setState(prev => ({
+          ...prev,
+          vendors: loaded,
+          selected: loaded.map(() => true),
+          vendorsLoading: false,
+        }));
+        return loaded;
+      }
+    } catch (err) {
+      console.error('Firestore load error:', err);
+    }
+    // Fallback: keep existing (demo) vendors
+    setState(prev => ({ ...prev, vendorsLoading: false }));
+    return null;
+  }, []);
+
   const addPortfolioItem = useCallback((vendorIdx, item) => {
     setState(prev => {
       const vendors = prev.vendors.map((v, i) => {
@@ -132,6 +196,8 @@ export function AppProvider({ children }) {
     openLightbox,
     closeLightbox,
     addPortfolioItem,
+    saveProjectToFirestore,
+    loadVendorsFromFirestore,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

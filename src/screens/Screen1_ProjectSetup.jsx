@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
 
@@ -6,15 +6,25 @@ export default function Screen1_ProjectSetup() {
   const navigate = useNavigate();
   const {
     projectName, team, budgetMin, budgetMax, duration, startDate, jobDescription,
-    setField, showToast,
+    vendors, setField, showToast, saveProjectToFirestore,
   } = useApp();
 
-  const handleNext = () => {
+  const [saving, setSaving] = useState(false);
+
+  const handleNext = async () => {
     if (!projectName.trim()) {
       showToast('กรุณากรอกชื่อโปรเจกต์ก่อน');
       return;
     }
-    showToast('บันทึกข้อมูลโปรเจกต์เรียบร้อย ✓');
+    setSaving(true);
+    const projectData = { projectName, team, budgetMin, budgetMax, duration, startDate, jobDescription };
+    const id = await saveProjectToFirestore(projectData, vendors);
+    setSaving(false);
+    if (id) {
+      showToast('บันทึกโปรเจกต์ลง Firestore เรียบร้อย ✓');
+    } else {
+      showToast('บันทึกข้อมูลโปรเจกต์เรียบร้อย ✓');
+    }
     navigate('/vendor-search');
   };
 
@@ -135,8 +145,9 @@ export default function Screen1_ProjectSetup() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-        <button className="btn btn-primary" onClick={handleNext}>
-          ถัดไป: หา vendor →
+        <button className="btn btn-primary" onClick={handleNext} disabled={saving}>
+          {saving && <span className="spinner" />}
+          {saving ? 'กำลังบันทึก...' : 'ถัดไป: หา vendor →'}
         </button>
       </div>
     </div>

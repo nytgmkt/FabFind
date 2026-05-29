@@ -47,6 +47,53 @@ export async function getKeywordSuggestions(jobDescription) {
 }
 
 /**
+ * Attempts to extract vendor info from a Fastwork profile URL.
+ * Returns an object with name, price, rat, rev, res, lang fields,
+ * or null if extraction fails / no API key.
+ */
+export async function extractVendorFromUrl(url) {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const prompt = `A user pasted this Fastwork freelancer profile URL: "${url}"
+
+Based on the URL structure alone (username, path segments), try to infer as much as possible about this freelancer profile and return a JSON object with these fields:
+- name: string (freelancer name or username from URL, use the last path segment)
+- price: string (estimate like "฿5,000" — use "—" if unknown)
+- rat: string (like "4.8 ★" — use "—" if unknown)
+- rev: string (like "20 รีวิว" — use "—" if unknown)
+- res: string (like "< 24 ชม." — use "—" if unknown)
+- lang: string ("ไทย" or "ไทย / อังกฤษ" — use "ไทย" as default)
+- score: number (50–90 range estimate, use 70 if unknown)
+- winner: boolean (always false)
+- fastworkUrl: string (the original URL)
+
+Return JSON only, no explanation.`;
+
+    const result = await callGemini(prompt);
+    if (result && typeof result === 'object' && result.name) {
+      return {
+        name: result.name || 'Vendor',
+        price: result.price || '—',
+        rat: result.rat || '—',
+        rev: result.rev || '—',
+        res: result.res || '—',
+        lang: result.lang || 'ไทย',
+        score: Number(result.score) || 70,
+        winner: false,
+        b2b: '—',
+        portfolio: [{ type: 'fastwork', label: 'Fastwork profile', url }],
+      };
+    }
+    return null;
+  } catch (e) {
+    console.warn('extractVendorFromUrl failed:', e);
+    return null;
+  }
+}
+
+/**
  * Returns an array of {key, label, ai:true} criteria rows.
  * Falls back to static aiRows on error or missing key.
  */

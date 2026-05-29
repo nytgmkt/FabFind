@@ -2,55 +2,7 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { db } from '../firebase.js';
 import { collection, addDoc, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const initialVendors = [
-  {
-    name: 'นกน้อย สตูดิโอ',
-    price: '฿8,000',
-    rat: '4.9 ★',
-    rev: '62 รีวิว',
-    res: '< 24 ชม.',
-    lang: 'ไทย / อังกฤษ',
-    b2b: '✓ มี',
-    score: 82,
-    winner: false,
-    portfolio: [
-      { type: 'fastwork', label: 'Fastwork profile', url: 'https://fastwork.co' },
-      { type: 'social', label: 'IG Reel — ของที่ระลึก', url: 'https://www.instagram.com/p/example1/', platform: 'instagram' },
-      { type: 'upload', label: 'Portfolio PDF', color: '#EEEDFE', tc: '#534AB7' },
-    ],
-  },
-  {
-    name: 'MK Creative',
-    price: '฿6,500',
-    rat: '4.7 ★',
-    rev: '48 รีวิว',
-    res: '< 12 ชม.',
-    lang: 'ไทย / อังกฤษ',
-    b2b: '✓ มี',
-    score: 91,
-    winner: true,
-    portfolio: [
-      { type: 'fastwork', label: 'Fastwork profile', url: 'https://fastwork.co' },
-      { type: 'social', label: 'TikTok — สินค้าไทย', url: 'https://www.tiktok.com/@example/video/0', platform: 'tiktok' },
-      { type: 'upload', label: 'ผลงาน IG grid', color: '#E1F5EE', tc: '#0F6E56' },
-    ],
-  },
-  {
-    name: 'พิกัดคอนเทนต์',
-    price: '฿5,000',
-    rat: '4.6 ★',
-    rev: '31 รีวิว',
-    res: '< 3 วัน',
-    lang: 'ไทย',
-    b2b: 'ไม่ระบุ',
-    score: 74,
-    winner: false,
-    portfolio: [
-      { type: 'fastwork', label: 'Fastwork profile', url: 'https://fastwork.co' },
-      { type: 'upload', label: 'Caption samples', color: '#FAEEDA', tc: '#854F0B' },
-    ],
-  },
-];
+const initialVendors = [];
 
 export const staticAiRows = [
   { key: 'price',    label: 'ราคา / เดือน',        ai: false },
@@ -82,7 +34,7 @@ export function AppProvider({ children }) {
     startDate: '2025-07-01',
     jobDescription: 'ต้องการ freelance ทำ content สำหรับ Social Media (IG, FB, TikTok) ของร้านขายของที่ระลึก...',
     vendors: initialVendors,
-    selected: [true, true, true],
+    selected: [],
     aiCriteria: [],
     aiKeywords: [],
     currentScreen: 1,
@@ -178,6 +130,33 @@ export function AppProvider({ children }) {
     return null;
   }, []);
 
+  // Add a single vendor to state + persist to Firestore
+  const addVendor = useCallback(async (vendor) => {
+    setState(prev => ({
+      ...prev,
+      vendors: [...prev.vendors, vendor],
+      selected: [...prev.selected, true],
+    }));
+    // Persist to Firestore if we have a projectId
+    setState(prev => {
+      const pid = prev.projectId;
+      if (pid) {
+        const docId = `${pid}_${vendor.name}_${Date.now()}`;
+        setDoc(doc(db, 'vendors', docId), {
+          ...vendor,
+          projectId: pid,
+          updatedAt: serverTimestamp(),
+        }).catch(err => console.error('Firestore addVendor error:', err));
+        setDoc(doc(db, 'projects', pid, 'vendors', docId), {
+          ...vendor,
+          projectId: pid,
+          updatedAt: serverTimestamp(),
+        }).catch(err => console.error('Firestore addVendor sub-doc error:', err));
+      }
+      return prev;
+    });
+  }, []);
+
   const addPortfolioItem = useCallback((vendorIdx, item) => {
     setState(prev => {
       const vendors = prev.vendors.map((v, i) => {
@@ -198,6 +177,7 @@ export function AppProvider({ children }) {
     addPortfolioItem,
     saveProjectToFirestore,
     loadVendorsFromFirestore,
+    addVendor,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

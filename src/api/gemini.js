@@ -98,12 +98,18 @@ Extract and return the following fields from the actual page content:
 
     if (!res.ok) {
       const err = await res.text();
+      console.error('[extractVendorFromUrl] HTTP error', res.status, err);
       throw new Error(`Gemini 2.5 API error ${res.status}: ${err}`);
     }
 
     const data = await res.json();
+    console.log('[extractVendorFromUrl] raw response:', JSON.stringify(data, null, 2));
+
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    console.log('[extractVendorFromUrl] extracted text:', raw);
+
     const v = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    console.log('[extractVendorFromUrl] parsed vendor:', v);
 
     if (!v?.vendor_name) return null;
 
@@ -134,7 +140,8 @@ Extract and return the following fields from the actual page content:
       portfolio: [{ type: 'fastwork', label: 'Fastwork profile', url }],
     };
   } catch (e) {
-    console.warn('extractVendorFromUrl (urlContext) failed:', e);
+    console.error('[extractVendorFromUrl] FAILED:', e?.message ?? e);
+    console.error('[extractVendorFromUrl] stack:', e?.stack);
     return null;
   }
 }

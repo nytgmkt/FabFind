@@ -275,7 +275,7 @@ journey_stages should have 3–6 stages appropriate for this job type.
 suggested_criteria should have 5–8 evaluation criteria specific to the job.`;
 
     const res = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: [{ parts: [{ text: prompt }] }],
     });
     const raw = res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';

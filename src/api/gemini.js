@@ -42,38 +42,26 @@ export async function extractVendorFromUrl(url) {
       model: 'gemini-2.5-flash',
       contents: [{
         parts: [{
-          text: `Please visit this Fastwork freelancer profile and extract the vendor information: ${url}
+          text: `Please visit this Fastwork freelancer profile URL and extract vendor information: ${url}
 
-Extract and return the following fields from the actual page content:
-- vendor_name: the freelancer's display name or shop name
-- rating: numeric rating (e.g. 4.8), 0 if not shown
-- jobs_done: number of completed jobs/reviews, 0 if not shown
-- price_min: minimum price as a number (THB), 0 if not shown
-- price_max: maximum price as a number (THB), 0 if not shown
-- price_unit: pricing unit such as "ชิ้น", "เดือน", "โปรเจกต์"
-- services: array of service names offered (up to 5)
-- response_time: response time string e.g. "ภายใน 1 ชั่วโมง"
-- languages: array of languages the freelancer works in`,
+Return ONLY a raw JSON object (no markdown, no code fences) with exactly these fields:
+{
+  "vendor_name": "display name or shop name",
+  "rating": 4.8,
+  "jobs_done": 42,
+  "price_min": 5000,
+  "price_max": 8000,
+  "price_unit": "เดือน",
+  "services": ["service 1", "service 2"],
+  "response_time": "ภายใน 24 ชั่วโมง",
+  "languages": ["ไทย", "อังกฤษ"]
+}
+
+Use 0 for unknown numbers, empty array for unknown lists, empty string for unknown strings.`,
         }],
       }],
       config: {
         tools: [{ urlContext: {} }],
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            vendor_name:   { type: 'STRING' },
-            rating:        { type: 'NUMBER' },
-            jobs_done:     { type: 'NUMBER' },
-            price_min:     { type: 'NUMBER' },
-            price_max:     { type: 'NUMBER' },
-            price_unit:    { type: 'STRING' },
-            services:      { type: 'ARRAY', items: { type: 'STRING' } },
-            response_time: { type: 'STRING' },
-            languages:     { type: 'ARRAY', items: { type: 'STRING' } },
-          },
-          required: ['vendor_name'],
-        },
       },
     });
 

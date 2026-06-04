@@ -70,7 +70,9 @@ Use 0 for unknown numbers, empty array for unknown lists, empty string for unkno
     const raw = res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     console.log('[extractVendorFromUrl] text:', raw);
 
-    const v = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) { console.error('[extractVendorFromUrl] no JSON object found in response'); return null; }
+    const v = JSON.parse(match[0]);
     console.log('[extractVendorFromUrl] parsed:', v);
 
     if (!v?.vendor_name) return null;

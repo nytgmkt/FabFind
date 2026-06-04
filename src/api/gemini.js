@@ -83,17 +83,29 @@ async function fetchImageAsBase64(url) {
   });
 }
 
-// ── Parse JSON from Gemini text (brace-counting) ───────────────────────────
+// ── Parse JSON from Gemini text (brace-counting with retry) ────────────────
 function parseJsonFromText(text) {
-  const start = text.indexOf('{');
-  if (start === -1) return null;
-  let depth = 0, end = -1;
-  for (let i = start; i < text.length; i++) {
-    if (text[i] === '{') depth++;
-    else if (text[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+  // Try each { in the text until one yields valid JSON
+  let searchFrom = 0;
+  while (true) {
+    const start = text.indexOf('{', searchFrom);
+    if (start === -1) break;
+    let depth = 0, end = -1;
+    for (let i = start; i < text.length; i++) {
+      if (text[i] === '{') depth++;
+      else if (text[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    if (end !== -1) {
+      try { return JSON.parse(text.slice(start, end + 1)); } catch { /* try next */ }
+    }
+    searchFrom = start + 1;
   }
-  if (end === -1) return null;
-  return JSON.parse(text.slice(start, end + 1));
+  // Fallback: extract ```json ... ``` block
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) {
+    try { return JSON.parse(fence[1].trim()); } catch { /* give up */ }
+  }
+  return null;
 }
 
 // ── Normalise raw Gemini result into vendor object ─────────────────────────

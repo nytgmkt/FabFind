@@ -83,29 +83,47 @@ async function fetchImageAsBase64(url) {
   });
 }
 
-// ── Parse JSON from Gemini text (brace-counting with retry) ────────────────
+// ── Parse JSON from Gemini text (multi-strategy) ───────────────────────────
 function parseJsonFromText(text) {
-  // Try each { in the text until one yields valid JSON
+  // Strategy 1: fenced code blocks — ```json first, then plain ```
+  const fenceJson = text.match(/```json\s*([\s\S]*?)```/);
+  if (fenceJson) { try { return JSON.parse(fenceJson[1].trim()); } catch { /* fall through */ } }
+  const fencePlain = text.match(/```\s*([\s\S]*?)```/);
+  if (fencePlain) { try { return JSON.parse(fencePlain[1].trim()); } catch { /* fall through */ } }
+
+  // Strategy 2: split at known Gemini preamble markers, parse what follows
+  const MARKERS = [
+    'Final JSON structure:', 'Final JSON:', "Let's assemble:", 'Here is the JSON:',
+    'Here\'s the JSON:', 'JSON output:', 'Result:', 'Output:',
+  ];
+  for (const marker of MARKERS) {
+    const idx = text.indexOf(marker);
+    if (idx !== -1) {
+      const after = text.slice(idx + marker.length).trim();
+      const result = tryBraceCounting(after);
+      if (result !== null) return result;
+    }
+  }
+
+  // Strategy 3: try every { in the full text until one parses
+  return tryBraceCounting(text);
+}
+
+function tryBraceCounting(text) {
   let searchFrom = 0;
   while (true) {
     const start = text.indexOf('{', searchFrom);
-    if (start === -1) break;
+    if (start === -1) return null;
     let depth = 0, end = -1;
     for (let i = start; i < text.length; i++) {
       if (text[i] === '{') depth++;
       else if (text[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
     }
     if (end !== -1) {
-      try { return JSON.parse(text.slice(start, end + 1)); } catch { /* try next */ }
+      try { return JSON.parse(text.slice(start, end + 1)); } catch { /* try next { */ }
     }
     searchFrom = start + 1;
   }
-  // Fallback: extract ```json ... ``` block
-  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) {
-    try { return JSON.parse(fence[1].trim()); } catch { /* give up */ }
-  }
-  return null;
 }
 
 // ── Normalise raw Gemini result into vendor object ─────────────────────────

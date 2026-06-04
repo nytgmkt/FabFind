@@ -9,6 +9,7 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'firebase-vendor': ['firebase/app', 'firebase/firestore'],
+          'genai-vendor': ['@google/genai'],
         },
       },
     },

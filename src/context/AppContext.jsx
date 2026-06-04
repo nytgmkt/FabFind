@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { db } from '../firebase.js';
-import { collection, addDoc, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, getDoc, doc, setDoc, serverTimestamp, updateDoc, increment } from 'firebase/firestore';
 
 const initialVendors = [];
 
@@ -41,6 +41,8 @@ export function AppProvider({ children }) {
     lbContent: null,
     projectId: null,
     vendorsLoading: false,
+    channels: [],
+    currentChannelId: null,
   });
 
   const setField = useCallback((key, value) => {
@@ -135,10 +137,20 @@ export function AppProvider({ children }) {
       vendors: [...prev.vendors, vendor],
       selected: [...prev.selected, true],
     }));
-    // Persist to Firestore if we have a projectId
+    // Persist to Firestore
     setState(prev => {
+      const channelId = prev.currentChannelId;
       const pid = prev.projectId;
-      if (pid) {
+      if (channelId) {
+        const docId = `${channelId}_${vendor.name}_${Date.now()}`;
+        setDoc(doc(db, 'channels', channelId, 'vendors', docId), {
+          ...vendor,
+          channelId,
+          updatedAt: serverTimestamp(),
+        }).catch(err => console.error('Firestore addVendor channel error:', err));
+        updateDoc(doc(db, 'channels', channelId), { vendor_count: increment(1) })
+          .catch(err => console.error('Firestore increment vendor_count error:', err));
+      } else if (pid) {
         const docId = `${pid}_${vendor.name}_${Date.now()}`;
         setDoc(doc(db, 'vendors', docId), {
           ...vendor,
@@ -153,6 +165,75 @@ export function AppProvider({ children }) {
       }
       return prev;
     });
+  }, []);
+
+  // Load all channels from Firestore
+  const loadChannels = useCallback(async () => {
+    try {
+      const snap = await getDocs(collection(db, 'channels'));
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setState(prev => ({ ...prev, channels: list }));
+      return list;
+    } catch (e) {
+      console.error('loadChannels error:', e);
+      return [];
+    }
+  }, []);
+
+  // Create a new channel in Firestore, returns the new channel object with id
+  const createChannel = useCallback(async (channelData) => {
+    try {
+      const ref = await addDoc(collection(db, 'channels'), {
+        ...channelData,
+        vendor_count: 0,
+        created_at: serverTimestamp(),
+      });
+      // Save criteria template for this channel_type
+      if (channelData.type && channelData.criteria?.length) {
+        await setDoc(doc(db, 'templates', channelData.type), {
+          journey_stages: channelData.journey_stages || [],
+          criteria: channelData.criteria || [],
+          complexity: channelData.complexity || 'moderate',
+          updated_at: serverTimestamp(),
+        });
+      }
+      const newChannel = { id: ref.id, ...channelData };
+      setState(prev => ({ ...prev, channels: [...prev.channels, newChannel], currentChannelId: ref.id }));
+      return newChannel;
+    } catch (e) {
+      console.error('createChannel error:', e);
+      return null;
+    }
+  }, []);
+
+  // Load template for a channel type (for pre-filling wizard step 2)
+  const loadTemplate = useCallback(async (channelType) => {
+    try {
+      const snap = await getDoc(doc(db, 'templates', channelType));
+      return snap.exists() ? snap.data() : null;
+    } catch { return null; }
+  }, []);
+
+  // Set current channel and load its data into state
+  const enterChannel = useCallback(async (channel) => {
+    setState(prev => ({
+      ...prev,
+      currentChannelId: channel.id,
+      channelType: channel.type || 'generic',
+      projectName: channel.name,
+      aiCriteria: (channel.criteria || []).map((label, i) => ({ key: `c${i}`, label, ai: false })),
+      vendors: [],
+      selected: [],
+      aiKeywords: [],
+    }));
+    // Load vendors for this channel
+    try {
+      const snap = await getDocs(collection(db, 'channels', channel.id, 'vendors'));
+      if (!snap.empty) {
+        const loaded = snap.docs.map(d => { const { channelId: _c, updatedAt: _u, ...v } = d.data(); return v; });
+        setState(prev => ({ ...prev, vendors: loaded, selected: loaded.map(() => true) }));
+      }
+    } catch (e) { console.error('enterChannel vendors error:', e); }
   }, []);
 
   // Write criteriaEvals back onto a vendor after Gemini evaluation
@@ -185,6 +266,10 @@ export function AppProvider({ children }) {
     loadVendorsFromFirestore,
     addVendor,
     updateVendorCriteriaEvals,
+    loadChannels,
+    createChannel,
+    loadTemplate,
+    enterChannel,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

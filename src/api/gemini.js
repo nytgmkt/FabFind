@@ -83,11 +83,17 @@ async function fetchImageAsBase64(url) {
   });
 }
 
-// ── Parse JSON from Gemini text (grabs last {...} block) ───────────────────
+// ── Parse JSON from Gemini text (brace-counting) ───────────────────────────
 function parseJsonFromText(text) {
-  const lastBrace = text.lastIndexOf('{');
-  if (lastBrace === -1) return null;
-  return JSON.parse(text.slice(lastBrace));
+  const start = text.indexOf('{');
+  if (start === -1) return null;
+  let depth = 0, end = -1;
+  for (let i = start; i < text.length; i++) {
+    if (text[i] === '{') depth++;
+    else if (text[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  if (end === -1) return null;
+  return JSON.parse(text.slice(start, end + 1));
 }
 
 // ── Normalise raw Gemini result into vendor object ─────────────────────────
@@ -239,6 +245,44 @@ export async function getKeywordSuggestions(jobDescription) {
   } catch (e) {
     console.warn('getKeywordSuggestions failed:', e?.message ?? e);
     return [];
+  }
+}
+
+// ── Analyze job for channel setup ─────────────────────────────────────────
+export async function analyzeJobForChannel(jobDescription, budgetMin = 0, budgetMax = 0) {
+  try {
+    const ai = getClient();
+    const prompt = `Analyze this job description and return a JSON object for setting up a vendor/talent sourcing channel.
+
+Job description: "${jobDescription}"
+Budget: ${budgetMin > 0 ? `฿${budgetMin}–฿${budgetMax}/month` : 'not specified'}
+
+Return ONLY a raw JSON object (no markdown) with exactly these fields:
+{
+  "channel_name": "short channel name (Thai or English, max 4 words)",
+  "channel_type": "social_media | web_dev | hr_admin | photography | creative | generic",
+  "channel_icon": "one emoji representing this channel",
+  "journey_stages": [
+    { "icon": "emoji", "name": "stage name (Thai)", "desc": "1-sentence description (Thai)" }
+  ],
+  "suggested_criteria": ["criterion 1", "criterion 2", "..."],
+  "teams_needed": 1,
+  "complexity": "simple | moderate | complex",
+  "summary": "one-sentence summary in Thai"
+}
+
+journey_stages should have 3–6 stages appropriate for this job type.
+suggested_criteria should have 5–8 evaluation criteria specific to the job.`;
+
+    const res = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ parts: [{ text: prompt }] }],
+    });
+    const raw = res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    return parseJsonFromText(raw);
+  } catch (e) {
+    console.warn('analyzeJobForChannel failed:', e?.message);
+    return null;
   }
 }
 

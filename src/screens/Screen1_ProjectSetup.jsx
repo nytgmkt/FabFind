@@ -6,7 +6,7 @@ export default function Screen1_ProjectSetup() {
   const navigate = useNavigate();
   const {
     projectName, team, budgetMin, budgetMax, duration, startDate, jobDescription,
-    vendors, setField, showToast, saveProjectToFirestore,
+    channelType, vendors, setField, showToast, saveProjectToFirestore,
   } = useApp();
 
   const [saving, setSaving] = useState(false);
@@ -105,6 +105,17 @@ export default function Screen1_ProjectSetup() {
               value={startDate}
               onChange={e => setField('startDate', e.target.value)}
             />
+          </div>
+
+          <div className="form-group">
+            <label>ประเภทงาน / Channel</label>
+            <select value={channelType} onChange={e => { setField('channelType', e.target.value); setField('aiCriteria', []); }}>
+              <option value="generic">— ทั่วไป —</option>
+              <option value="social_media">Social Media Content</option>
+              <option value="web_dev">Website / App Development</option>
+              <option value="hr_admin">HR / Admin / ผู้สมัครงาน</option>
+              <option value="photography">Photography / Video</option>
+            </select>
           </div>
 
           <div className="form-group full">

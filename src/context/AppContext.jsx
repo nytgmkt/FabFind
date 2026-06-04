@@ -8,9 +8,6 @@ export const staticAiRows = [
   { key: 'price',    label: 'ราคา / เดือน',        ai: false },
   { key: 'rat',      label: 'Rating',               ai: false },
   { key: 'rev',      label: 'จำนวนรีวิว',            ai: false },
-  { key: 'platform', label: 'Platform ที่ทำได้',     ai: true  },
-  { key: 'video',    label: 'ทำ Video / Reel ได้',  ai: true  },
-  { key: 'calendar', label: 'มี Content Calendar',  ai: true  },
   { key: 'res',      label: 'Response time',        ai: false },
   { key: 'lang',     label: 'ภาษา',                 ai: false },
   { key: 'score',    label: 'AI Match Score',       isScore: true },
@@ -35,13 +32,14 @@ export function AppProvider({ children }) {
     jobDescription: 'ต้องการ freelance ทำ content สำหรับ Social Media (IG, FB, TikTok) ของร้านขายของที่ระลึก...',
     vendors: initialVendors,
     selected: [],
-    aiCriteria: [],
+    aiCriteria: [],       // [{key, label, ai}] used in compare table
+    channelType: 'generic', // social_media | web_dev | hr_admin | photography | generic
     aiKeywords: [],
     currentScreen: 1,
     toastMsg: '',
     lbOpen: false,
     lbContent: null,
-    projectId: null,   // Firestore document ID after save
+    projectId: null,
     vendorsLoading: false,
   });
 
@@ -157,6 +155,14 @@ export function AppProvider({ children }) {
     });
   }, []);
 
+  // Write criteriaEvals back onto a vendor after Gemini evaluation
+  const updateVendorCriteriaEvals = useCallback((vendorIdx, evals) => {
+    setState(prev => ({
+      ...prev,
+      vendors: prev.vendors.map((v, i) => i === vendorIdx ? { ...v, criteriaEvals: evals } : v),
+    }));
+  }, []);
+
   const addPortfolioItem = useCallback((vendorIdx, item) => {
     setState(prev => {
       const vendors = prev.vendors.map((v, i) => {
@@ -178,6 +184,7 @@ export function AppProvider({ children }) {
     saveProjectToFirestore,
     loadVendorsFromFirestore,
     addVendor,
+    updateVendorCriteriaEvals,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

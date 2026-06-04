@@ -7,10 +7,222 @@ function getClient() {
   return new GoogleGenAI({ apiKey });
 }
 
-/**
- * Returns an array of 6 keyword strings for searching freelancers.
- * Falls back to an empty array on error.
- */
+// ── URL type detection ──────────────────────────────────────────────────────
+export function detectUrlType(url) {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.toLowerCase();
+    const ext = u.pathname.split('.').pop().toLowerCase();
+
+    if (ext === 'pdf') return 'pdf';
+    if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) return 'image';
+    if (host.includes('fastwork.co')) return 'fastwork';
+    if (host.includes('linkedin.com') && u.pathname.includes('/in/')) return 'linkedin';
+    if (host.includes('jobsdb.com') || host.includes('jobtopgun.com')) return 'jobsdb';
+    return 'generic';
+  } catch {
+    return 'generic';
+  }
+}
+
+export function loadingMessageFor(type) {
+  if (type === 'pdf') return 'กำลังอ่าน Resume PDF...';
+  if (type === 'image') return 'กำลังวิเคราะห์รูปภาพ...';
+  return 'กำลังอ่านข้อมูลจากเว็บ...';
+}
+
+// ── Prompt builders per source type ────────────────────────────────────────
+function buildExtractionPrompt(url, type, channelType) {
+  const channelHint = channelType
+    ? `\n\nThis vendor/talent is being evaluated for a "${channelType}" role. Focus on the most relevant information for this type of work.`
+    : '';
+
+  const baseInstruction = `Return ONLY a raw JSON object (no markdown, no code fences, no explanation) with exactly these fields:
+{
+  "vendor_name": "display name",
+  "role_type": "freelancer|applicant|agency",
+  "rating": 4.8,
+  "jobs_done": 42,
+  "price_min": 5000,
+  "price_max": 8000,
+  "price_unit": "เดือน",
+  "services": ["service 1", "service 2"],
+  "response_time": "ภายใน 24 ชั่วโมง",
+  "languages": ["ไทย"],
+  "headline": "",
+  "skills": [],
+  "experience_years": 0,
+  "salary_expected": "",
+  "availability": "",
+  "team_size": 0
+}
+Use 0 for unknown numbers, "" for unknown strings, [] for unknown arrays.`;
+
+  const prompts = {
+    fastwork: `Please visit this Fastwork freelancer profile and extract vendor information: ${url}${channelHint}\n\n${baseInstruction}`,
+    linkedin: `Please visit this LinkedIn profile and extract the person's professional information: ${url}${channelHint}\n\nFocus on: name, headline/title, skills, years of experience, languages spoken.\n\n${baseInstruction}`,
+    jobsdb: `Please visit this job listing or applicant profile and extract information: ${url}${channelHint}\n\nFocus on: name/agency, services offered, salary range, experience required, languages.\n\n${baseInstruction}`,
+    pdf: `Please read this PDF document (resume or portfolio) and extract the person's or agency's information: ${url}${channelHint}\n\nFocus on: name, skills, experience, expected salary, languages, available services.\n\n${baseInstruction}`,
+    generic: `Please visit this URL and extract vendor or talent information: ${url}${channelHint}\n\nExtract: name, description, services, price/rate, contact info, languages.\n\n${baseInstruction}`,
+  };
+  return prompts[type] || prompts.generic;
+}
+
+// ── Fetch image URL as base64 ───────────────────────────────────────────────
+async function fetchImageAsBase64(url) {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve({
+      data: reader.result.split(',')[1],
+      mimeType: blob.type || 'image/jpeg',
+    });
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// ── Parse JSON from Gemini text (grabs last {...} block) ───────────────────
+function parseJsonFromText(text) {
+  const lastBrace = text.lastIndexOf('{');
+  if (lastBrace === -1) return null;
+  return JSON.parse(text.slice(lastBrace));
+}
+
+// ── Normalise raw Gemini result into vendor object ─────────────────────────
+function normaliseVendor(v, url, type) {
+  if (!v?.vendor_name) return null;
+
+  const priceStr = v.price_min > 0
+    ? `฿${Number(v.price_min).toLocaleString()}${v.price_max > v.price_min ? `–฿${Number(v.price_max).toLocaleString()}` : ''}`
+    : v.salary_expected || '—';
+
+  const score = Math.min(95, 60
+    + (v.rating > 0 ? Math.round((v.rating / 5) * 20) : 0)
+    + (v.jobs_done > 10 ? 10 : v.jobs_done > 0 ? 5 : 0)
+    + (v.price_min > 0 ? 5 : 0));
+
+  return {
+    name: v.vendor_name,
+    role_type: v.role_type || 'freelancer',
+    price: priceStr,
+    rat: v.rating > 0 ? `${v.rating} ★` : '—',
+    rev: v.jobs_done > 0 ? `${v.jobs_done} รีวิว` : '—',
+    res: v.response_time || '—',
+    lang: v.languages?.length > 0 ? v.languages.join(' / ') : 'ไทย',
+    b2b: '—',
+    score,
+    winner: false,
+    services: v.services || [],
+    skills: v.skills || [],
+    headline: v.headline || '',
+    experience_years: v.experience_years || 0,
+    salary_expected: v.salary_expected || '',
+    availability: v.availability || '',
+    team_size: v.team_size || 0,
+    source_type: type,
+    source_url: url,
+    criteriaEvals: [],
+    portfolio: [{ type: type === 'fastwork' ? 'fastwork' : 'upload', label: `${type} profile`, url }],
+  };
+}
+
+// ── Main extraction dispatcher ─────────────────────────────────────────────
+export async function extractVendorFromUrl(url, channelType = '') {
+  try {
+    const ai = getClient();
+    const type = detectUrlType(url);
+
+    // Image: use vision (inline base64)
+    if (type === 'image') {
+      const { data, mimeType } = await fetchImageAsBase64(url);
+      const res = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: [{
+          parts: [
+            { text: buildExtractionPrompt(url, 'image', channelType) },
+            { inlineData: { mimeType, data } },
+          ],
+        }],
+      });
+      const raw = res.candidates?.[0]?.content?.parts?.find(p => p.text)?.text ?? '';
+      const v = parseJsonFromText(raw);
+      return normaliseVendor(v, url, 'image');
+    }
+
+    // All URL-based types: use urlContext
+    const res = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{ parts: [{ text: buildExtractionPrompt(url, type, channelType) }] }],
+      config: { tools: [{ urlContext: {} }] },
+    });
+
+    const candidate = res.candidates?.[0];
+    console.log('[extractVendorFromUrl] candidate:', JSON.stringify(candidate, null, 2));
+    const raw = candidate?.content?.parts?.find(p => p.text)?.text ?? '';
+    console.log('[extractVendorFromUrl] text:', raw);
+
+    const v = parseJsonFromText(raw);
+    console.log('[extractVendorFromUrl] parsed:', v);
+    return normaliseVendor(v, url, type);
+  } catch (e) {
+    console.error('[extractVendorFromUrl] FAILED:', e?.message ?? e);
+    return null;
+  }
+}
+
+// ── Evaluate a vendor against channel criteria ─────────────────────────────
+export async function evaluateVendorAgainstCriteria(vendor, criteria, channelType = '') {
+  try {
+    const ai = getClient();
+    const criteriaList = criteria.map(c => c.label).join(', ');
+    const vendorSummary = [
+      `Name: ${vendor.name}`,
+      vendor.price !== '—' ? `Price: ${vendor.price}` : '',
+      vendor.rat !== '—' ? `Rating: ${vendor.rat}` : '',
+      vendor.services?.length ? `Services: ${vendor.services.join(', ')}` : '',
+      vendor.skills?.length ? `Skills: ${vendor.skills.join(', ')}` : '',
+      vendor.headline ? `Headline: ${vendor.headline}` : '',
+      vendor.experience_years ? `Experience: ${vendor.experience_years} years` : '',
+      vendor.lang !== '—' ? `Languages: ${vendor.lang}` : '',
+      vendor.res !== '—' ? `Response time: ${vendor.res}` : '',
+    ].filter(Boolean).join('\n');
+
+    const prompt = `You are evaluating a vendor/talent for a "${channelType || 'general'}" project.
+
+Vendor info:
+${vendorSummary}
+
+Evaluate this vendor against these criteria: ${criteriaList}
+
+Return ONLY a raw JSON array (no markdown, no explanation):
+[
+  { "criterion": "criterion name", "value": "what this vendor offers (short)", "score": 2 },
+  ...
+]
+
+Score guide: 0=unknown/not applicable, 1=weak, 2=adequate, 3=strong.
+One entry per criterion in the same order as given.`;
+
+    const res = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: [{ parts: [{ text: prompt }] }],
+    });
+    const raw = res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+    // find the array
+    const arrStart = cleaned.indexOf('[');
+    if (arrStart === -1) return [];
+    const result = JSON.parse(cleaned.slice(arrStart));
+    return Array.isArray(result) ? result : [];
+  } catch (e) {
+    console.warn('evaluateVendorAgainstCriteria failed:', e?.message ?? e);
+    return [];
+  }
+}
+
+// ── AI keyword suggestions ─────────────────────────────────────────────────
 export async function getKeywordSuggestions(jobDescription) {
   try {
     const ai = getClient();
@@ -30,96 +242,26 @@ export async function getKeywordSuggestions(jobDescription) {
   }
 }
 
-/**
- * Reads a Fastwork profile URL using Gemini 2.5 Flash with urlContext grounding.
- * Returns a normalised vendor object, or null on failure.
- */
-export async function extractVendorFromUrl(url) {
+// ── Generate comparison criteria ───────────────────────────────────────────
+const CHANNEL_CRITERIA_FALLBACK = {
+  social_media:  ['Platform coverage', 'Video / Reel', 'Content Calendar', 'Ads capability', 'Response time', 'ภาษา'],
+  web_dev:       ['Tech stack', 'Portfolio sites', 'Timeline', 'Support included', 'Price fit', 'ภาษา'],
+  hr_admin:      ['Experience years', 'Salary expectation', 'Tools proficiency', 'Availability', 'ภาษา'],
+  photography:   ['Style match', 'Equipment', 'Turnaround time', 'Editing included', 'Price fit', 'ภาษา'],
+  generic:       ['Relevant experience', 'Price fit', 'Response time', 'ภาษา', 'Services offered'],
+};
+
+export async function generateCriteria(jobDescription, channelType = 'generic') {
+  const fallbackLabels = CHANNEL_CRITERIA_FALLBACK[channelType] || CHANNEL_CRITERIA_FALLBACK.generic;
+  const fallback = fallbackLabels.map((label, i) => ({ key: `c${i}`, label, ai: false }));
+
   try {
     const ai = getClient();
+    const prompt = `Based on this job description and channel type "${channelType}", generate 5-7 comparison criteria for evaluating vendors/talents.
+Return JSON array of {key: string (snake_case), label: string (Thai or English, short)} objects only.
 
-    const res = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: [{
-        parts: [{
-          text: `Please visit this Fastwork freelancer profile URL and extract vendor information: ${url}
+Job description: ${jobDescription}`;
 
-Return ONLY a raw JSON object (no markdown, no code fences) with exactly these fields:
-{
-  "vendor_name": "display name or shop name",
-  "rating": 4.8,
-  "jobs_done": 42,
-  "price_min": 5000,
-  "price_max": 8000,
-  "price_unit": "เดือน",
-  "services": ["service 1", "service 2"],
-  "response_time": "ภายใน 24 ชั่วโมง",
-  "languages": ["ไทย", "อังกฤษ"]
-}
-
-Use 0 for unknown numbers, empty array for unknown lists, empty string for unknown strings.`,
-        }],
-      }],
-      config: {
-        tools: [{ urlContext: {} }],
-      },
-    });
-
-    const candidate = res.candidates?.[0];
-    console.log('[extractVendorFromUrl] candidate:', JSON.stringify(candidate, null, 2));
-
-    // When urlContext is active some parts are toolResult — find the text part
-    const parts = candidate?.content?.parts ?? [];
-    const raw = parts.find(p => p.text)?.text ?? '';
-    console.log('[extractVendorFromUrl] text part:', raw);
-
-    // Grab the LAST {...} block — Gemini sometimes puts explanation before the JSON
-    const matches = [...raw.matchAll(/\{[\s\S]*?\}/g)];
-    const lastBrace = raw.lastIndexOf('{');
-    const match = lastBrace !== -1 ? [raw.slice(lastBrace)] : null;
-    if (!match) { console.error('[extractVendorFromUrl] no JSON object found in response'); return null; }
-    const v = JSON.parse(match[0]);
-    console.log('[extractVendorFromUrl] parsed:', v);
-
-    if (!v?.vendor_name) return null;
-
-    const priceStr = v.price_min > 0
-      ? `฿${Number(v.price_min).toLocaleString()}${v.price_max > v.price_min ? `–฿${Number(v.price_max).toLocaleString()}` : ''}`
-      : '—';
-
-    const score = Math.min(95, 60
-      + (v.rating > 0 ? Math.round((v.rating / 5) * 20) : 0)
-      + (v.jobs_done > 10 ? 10 : v.jobs_done > 0 ? 5 : 0)
-      + (v.price_min > 0 ? 5 : 0));
-
-    return {
-      name: v.vendor_name,
-      price: priceStr,
-      rat: v.rating > 0 ? `${v.rating} ★` : '—',
-      rev: v.jobs_done > 0 ? `${v.jobs_done} รีวิว` : '—',
-      res: v.response_time || '—',
-      lang: v.languages?.length > 0 ? v.languages.join(' / ') : 'ไทย',
-      b2b: '—',
-      score,
-      winner: false,
-      services: v.services || [],
-      portfolio: [{ type: 'fastwork', label: 'Fastwork profile', url }],
-    };
-  } catch (e) {
-    console.error('[extractVendorFromUrl] FAILED:', e?.message ?? e);
-    console.error('[extractVendorFromUrl] stack:', e?.stack);
-    return null;
-  }
-}
-
-/**
- * Returns an array of {key, label, ai:true} criteria rows.
- * Falls back to static aiRows on error or missing key.
- */
-export async function generateCriteria(jobDescription) {
-  try {
-    const ai = getClient();
-    const prompt = `Based on this job description, generate 4-6 comparison criteria rows for evaluating freelancers. Return JSON array of {key: string, label: string (Thai)} objects only.\n\nJob description: ${jobDescription}`;
     const res = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [{ parts: [{ text: prompt }] }],
@@ -127,14 +269,10 @@ export async function generateCriteria(jobDescription) {
     const raw = res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
     const result = JSON.parse(cleaned);
-    if (!Array.isArray(result) || result.length === 0) return staticAiRows;
-
-    const staticBase = staticAiRows.filter(r => !r.ai && !r.isScore);
-    const aiRows = result.map(r => ({ key: r.key, label: r.label, ai: true }));
-    const scoreRow = staticAiRows.find(r => r.isScore);
-    return [...staticBase, ...aiRows, scoreRow];
+    if (!Array.isArray(result) || result.length === 0) return fallback;
+    return result.map(r => ({ key: r.key, label: r.label, ai: true }));
   } catch (e) {
     console.warn('generateCriteria failed:', e?.message ?? e);
-    return staticAiRows;
+    return fallback;
   }
 }

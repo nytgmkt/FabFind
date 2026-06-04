@@ -65,10 +65,13 @@ Use 0 for unknown numbers, empty array for unknown lists, empty string for unkno
       },
     });
 
-    console.log('[extractVendorFromUrl] raw response:', JSON.stringify(res, null, 2));
+    const candidate = res.candidates?.[0];
+    console.log('[extractVendorFromUrl] candidate:', JSON.stringify(candidate, null, 2));
 
-    const raw = res.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-    console.log('[extractVendorFromUrl] text:', raw);
+    // When urlContext is active some parts are toolResult — find the text part
+    const parts = candidate?.content?.parts ?? [];
+    const raw = parts.find(p => p.text)?.text ?? '';
+    console.log('[extractVendorFromUrl] text part:', raw);
 
     const match = raw.match(/\{[\s\S]*\}/);
     if (!match) { console.error('[extractVendorFromUrl] no JSON object found in response'); return null; }

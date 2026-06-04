@@ -5,6 +5,8 @@ import Topbar from './components/Topbar.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Lightbox from './components/Lightbox.jsx';
 import Toast from './components/Toast.jsx';
+import Screen0_ChannelHub from './screens/Screen0_ChannelHub.jsx';
+import Screen0_5_ChannelSetup from './screens/Screen0_5_ChannelSetup.jsx';
 import Screen1_ProjectSetup from './screens/Screen1_ProjectSetup.jsx';
 import Screen2_VendorSearch from './screens/Screen2_VendorSearch.jsx';
 import Screen3_Compare from './screens/Screen3_Compare.jsx';
@@ -19,7 +21,7 @@ function AppShell() {
         <Sidebar />
         <main id="main-content">
           <Routes>
-            <Route path="/" element={<Screen1_ProjectSetup />} />
+            <Route path="/setup" element={<Screen1_ProjectSetup />} />
             <Route path="/vendor-search" element={<Screen2_VendorSearch />} />
             <Route path="/compare" element={<Screen3_Compare />} />
             <Route path="/approver" element={<Screen4_Approver />} />
@@ -28,7 +30,6 @@ function AppShell() {
         </main>
       </div>
       <Lightbox />
-      <Toast />
     </div>
   );
 }
@@ -37,7 +38,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppProvider>
-        <AppShell />
+        <Routes>
+          <Route path="/" element={<Screen0_ChannelHub />} />
+          <Route path="/channel/new" element={<Screen0_5_ChannelSetup />} />
+          <Route path="/*" element={<AppShell />} />
+        </Routes>
+        <Toast />
       </AppProvider>
     </BrowserRouter>
   );

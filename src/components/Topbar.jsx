@@ -3,14 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
 
 const STEPS = [
-  { num: 1, label: 'ตั้งค่า', path: '/' },
+  { num: 1, label: 'ตั้งค่า', path: '/setup' },
   { num: 2, label: 'หา Vendor', path: '/vendor-search' },
   { num: 3, label: 'เปรียบเทียบ', path: '/compare' },
   { num: 4, label: 'Approver', path: '/approver' },
   { num: 5, label: 'Export', path: '/export' },
 ];
 
-const ROUTES_ORDER = ['/', '/vendor-search', '/compare', '/approver', '/export'];
+const ROUTES_ORDER = ['/setup', '/vendor-search', '/compare', '/approver', '/export'];
 
 export default function Topbar() {
   const { projectName } = useApp();
@@ -27,7 +27,7 @@ export default function Topbar() {
 
   return (
     <div id="topbar">
-      <span className="brand">
+      <span className="brand" style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
         Vendor<strong>Match</strong>
       </span>
       <span className="sep">|</span>

@@ -34,21 +34,32 @@ export function loadingMessageFor(type) {
 // ── Prompt builders per source type ────────────────────────────────────────
 function buildExtractionPrompt(url, type, channelType) {
   const channelHint = channelType
-    ? `\n\nThis vendor/talent is being evaluated for a "${channelType}" role. Focus on the most relevant information for this type of work.`
+    ? ` This vendor is being evaluated for a "${channelType}" role.`
     : '';
 
-  const baseInstruction = `Return ONLY a raw JSON object (no markdown, no code fences, no explanation) with exactly these fields:
+  const sourceHints = {
+    fastwork: `Visit this Fastwork freelancer profile: ${url}`,
+    linkedin: `Visit this LinkedIn profile: ${url}`,
+    jobsdb:  `Visit this job listing or applicant profile: ${url}`,
+    pdf:     `Read this PDF resume or portfolio: ${url}`,
+    generic: `Visit this URL: ${url}`,
+  };
+  const hint = sourceHints[type] || sourceHints.generic;
+
+  return `${hint}${channelHint}
+
+Extract vendor data from the page. Reply with ONLY a JSON object — no explanation, no thinking out loud, no preamble, no markdown fences. Start your response with { and end with }. Use this exact structure:
 {
-  "vendor_name": "display name",
-  "role_type": "freelancer|applicant|agency",
-  "rating": 4.8,
-  "jobs_done": 42,
-  "price_min": 5000,
-  "price_max": 8000,
-  "price_unit": "เดือน",
-  "services": ["service 1", "service 2"],
-  "response_time": "ภายใน 24 ชั่วโมง",
-  "languages": ["ไทย"],
+  "vendor_name": "",
+  "role_type": "freelancer",
+  "rating": 0,
+  "jobs_done": 0,
+  "price_min": 0,
+  "price_max": 0,
+  "price_unit": "บาท",
+  "services": [],
+  "response_time": "",
+  "languages": [],
   "headline": "",
   "skills": [],
   "experience_years": 0,
@@ -56,16 +67,7 @@ function buildExtractionPrompt(url, type, channelType) {
   "availability": "",
   "team_size": 0
 }
-Use 0 for unknown numbers, "" for unknown strings, [] for unknown arrays.`;
-
-  const prompts = {
-    fastwork: `Please visit this Fastwork freelancer profile and extract vendor information: ${url}${channelHint}\n\n${baseInstruction}`,
-    linkedin: `Please visit this LinkedIn profile and extract the person's professional information: ${url}${channelHint}\n\nFocus on: name, headline/title, skills, years of experience, languages spoken.\n\n${baseInstruction}`,
-    jobsdb: `Please visit this job listing or applicant profile and extract information: ${url}${channelHint}\n\nFocus on: name/agency, services offered, salary range, experience required, languages.\n\n${baseInstruction}`,
-    pdf: `Please read this PDF document (resume or portfolio) and extract the person's or agency's information: ${url}${channelHint}\n\nFocus on: name, skills, experience, expected salary, languages, available services.\n\n${baseInstruction}`,
-    generic: `Please visit this URL and extract vendor or talent information: ${url}${channelHint}\n\nExtract: name, description, services, price/rate, contact info, languages.\n\n${baseInstruction}`,
-  };
-  return prompts[type] || prompts.generic;
+Use 0 for unknown numbers, "" for unknown strings, [] for unknown arrays. Output nothing except the JSON object.`;
 }
 
 // ── Fetch image URL as base64 ───────────────────────────────────────────────
@@ -191,7 +193,7 @@ export async function extractVendorFromUrl(url, channelType = '') {
     const res = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: [{ parts: [{ text: buildExtractionPrompt(url, type, channelType) }] }],
-      config: { tools: [{ urlContext: {} }] },
+      config: { tools: [{ urlContext: {} }], maxOutputTokens: 2000 },
     });
 
     const candidate = res.candidates?.[0];

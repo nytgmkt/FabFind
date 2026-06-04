@@ -73,7 +73,10 @@ Use 0 for unknown numbers, empty array for unknown lists, empty string for unkno
     const raw = parts.find(p => p.text)?.text ?? '';
     console.log('[extractVendorFromUrl] text part:', raw);
 
-    const match = raw.match(/\{[\s\S]*\}/);
+    // Grab the LAST {...} block — Gemini sometimes puts explanation before the JSON
+    const matches = [...raw.matchAll(/\{[\s\S]*?\}/g)];
+    const lastBrace = raw.lastIndexOf('{');
+    const match = lastBrace !== -1 ? [raw.slice(lastBrace)] : null;
     if (!match) { console.error('[extractVendorFromUrl] no JSON object found in response'); return null; }
     const v = JSON.parse(match[0]);
     console.log('[extractVendorFromUrl] parsed:', v);

@@ -1,6 +1,7 @@
 import { staticAiRows } from '../context/AppContext.jsx';
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const API_BASE_25 = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 async function callGemini(prompt) {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -21,8 +22,6 @@ async function callGemini(prompt) {
 
   const data = await res.json();
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-
-  // Strip markdown code fences if present
   const cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
   return JSON.parse(cleaned);
 }
@@ -47,48 +46,95 @@ export async function getKeywordSuggestions(jobDescription) {
 }
 
 /**
- * Attempts to extract vendor info from a Fastwork profile URL.
- * Returns an object with name, price, rat, rev, res, lang fields,
- * or null if extraction fails / no API key.
+ * Reads a Fastwork profile URL using Gemini 2.5 Flash with urlContext.
+ * Returns a normalised vendor object, or null on failure.
  */
 export async function extractVendorFromUrl(url) {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) return null;
 
   try {
-    const prompt = `A user pasted this Fastwork freelancer profile URL: "${url}"
+    const res = await fetch(`${API_BASE_25}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tools: [{ urlContext: {} }],
+        contents: [{
+          parts: [{
+            text: `Please visit this Fastwork freelancer profile and extract the vendor information: ${url}
 
-Based on the URL structure alone (username, path segments), try to infer as much as possible about this freelancer profile and return a JSON object with these fields:
-- name: string (freelancer name or username from URL, use the last path segment)
-- price: string (estimate like "฿5,000" — use "—" if unknown)
-- rat: string (like "4.8 ★" — use "—" if unknown)
-- rev: string (like "20 รีวิว" — use "—" if unknown)
-- res: string (like "< 24 ชม." — use "—" if unknown)
-- lang: string ("ไทย" or "ไทย / อังกฤษ" — use "ไทย" as default)
-- score: number (50–90 range estimate, use 70 if unknown)
-- winner: boolean (always false)
-- fastworkUrl: string (the original URL)
+Extract and return the following fields from the actual page content:
+- vendor_name: the freelancer's display name or shop name
+- rating: numeric rating (e.g. 4.8), 0 if not shown
+- jobs_done: number of completed jobs/reviews, 0 if not shown
+- price_min: minimum price as a number (THB), 0 if not shown
+- price_max: maximum price as a number (THB), 0 if not shown
+- price_unit: pricing unit such as "ชิ้น", "เดือน", "โปรเจกต์"
+- services: array of service names offered (up to 5)
+- response_time: response time string e.g. "ภายใน 1 ชั่วโมง"
+- languages: array of languages the freelancer works in`,
+          }],
+        }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              vendor_name:   { type: 'STRING' },
+              rating:        { type: 'NUMBER' },
+              jobs_done:     { type: 'NUMBER' },
+              price_min:     { type: 'NUMBER' },
+              price_max:     { type: 'NUMBER' },
+              price_unit:    { type: 'STRING' },
+              services:      { type: 'ARRAY', items: { type: 'STRING' } },
+              response_time: { type: 'STRING' },
+              languages:     { type: 'ARRAY', items: { type: 'STRING' } },
+            },
+            required: ['vendor_name'],
+          },
+        },
+      }),
+    });
 
-Return JSON only, no explanation.`;
-
-    const result = await callGemini(prompt);
-    if (result && typeof result === 'object' && result.name) {
-      return {
-        name: result.name || 'Vendor',
-        price: result.price || '—',
-        rat: result.rat || '—',
-        rev: result.rev || '—',
-        res: result.res || '—',
-        lang: result.lang || 'ไทย',
-        score: Number(result.score) || 70,
-        winner: false,
-        b2b: '—',
-        portfolio: [{ type: 'fastwork', label: 'Fastwork profile', url }],
-      };
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Gemini 2.5 API error ${res.status}: ${err}`);
     }
-    return null;
+
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const v = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+    if (!v?.vendor_name) return null;
+
+    const priceStr = v.price_min > 0
+      ? `฿${Number(v.price_min).toLocaleString()}${v.price_max > v.price_min ? `–฿${Number(v.price_max).toLocaleString()}` : ''}`
+      : '—';
+
+    const ratStr = v.rating > 0 ? `${v.rating} ★` : '—';
+    const revStr = v.jobs_done > 0 ? `${v.jobs_done} รีวิว` : '—';
+    const langStr = v.languages?.length > 0 ? v.languages.join(' / ') : 'ไทย';
+
+    const score = Math.min(95, 60
+      + (v.rating > 0 ? Math.round((v.rating / 5) * 20) : 0)
+      + (v.jobs_done > 10 ? 10 : v.jobs_done > 0 ? 5 : 0)
+      + (v.price_min > 0 ? 5 : 0));
+
+    return {
+      name: v.vendor_name,
+      price: priceStr,
+      rat: ratStr,
+      rev: revStr,
+      res: v.response_time || '—',
+      lang: langStr,
+      b2b: '—',
+      score,
+      winner: false,
+      services: v.services || [],
+      portfolio: [{ type: 'fastwork', label: 'Fastwork profile', url }],
+    };
   } catch (e) {
-    console.warn('extractVendorFromUrl failed:', e);
+    console.warn('extractVendorFromUrl (urlContext) failed:', e);
     return null;
   }
 }
@@ -106,7 +152,6 @@ export async function generateCriteria(jobDescription) {
     const result = await callGemini(prompt);
     if (!Array.isArray(result) || result.length === 0) return staticAiRows;
 
-    // Merge with static non-AI rows (price, rat, rev, res, lang) and add score at end
     const staticBase = staticAiRows.filter(r => !r.ai && !r.isScore);
     const aiRows = result.map(r => ({ key: r.key, label: r.label, ai: true }));
     const scoreRow = staticAiRows.find(r => r.isScore);

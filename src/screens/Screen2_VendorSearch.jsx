@@ -149,7 +149,7 @@ export default function Screen2_VendorSearch() {
           />
           <button className="btn btn-primary" onClick={handleExtractFromUrl} disabled={urlLoading || !urlInput.trim()}>
             {urlLoading && <span className="spinner" />}
-            {urlLoading ? 'กำลังดึงข้อมูล...' : '+ เพิ่ม vendor'}
+            {urlLoading ? 'กำลังอ่านข้อมูลจาก Fastwork...' : '+ เพิ่ม vendor'}
           </button>
         </div>
         <p style={{ fontSize: 12, color: 'var(--t3)', marginTop: 8 }}>

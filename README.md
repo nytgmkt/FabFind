@@ -1,48 +1,21 @@
-# VendorMatch
+# FabFind
 
-แอปเปรียบเทียบ vendor สำหรับทีมจัดซื้อและการตลาด
+ผู้ช่วยค้นหาผ้าสำหรับเสื้อองค์กร (โปโล/ยูนิฟอร์ม) — พิมพ์ความต้องการเป็นภาษาธรรมชาติหรือเลือกตัวกรอง แล้วระบบจะแนะนำผ้าจากฐานข้อมูลจริง พร้อมเปรียบเทียบและดูสเปกได้ในตัว
 
-## วิธีติดตั้ง
+ข้อมูลผ้าและราคาอ้างอิงจาก [Tee Culture Fabric Technology](https://www.teeculture.com/fabric-technology/) และใบราคาที่ได้รับอนุมัติ (มีผล 20 พ.ย. 2568) เวอร์ชันนี้ครอบคลุมเฉพาะหมวดเสื้อโปโล/ยูนิฟอร์ม
 
-1. Clone โปรเจกต์
-   ```bash
-   git clone <repo-url>
-   cd vendormatch
-   ```
+## เทคโนโลยี
 
-2. คัดลอกไฟล์ environment
-   ```bash
-   cp .env.example .env
-   ```
+หน้าเว็บเดี่ยวแบบ static — HTML/CSS/JavaScript ล้วน ไม่ต้อง build หรือติดตั้ง dependency ใด ๆ ตรรกะการแยกวิเคราะห์ข้อความและการให้คะแนนผ้าเป็น rule-based ทำงานฝั่ง client ทั้งหมด และดึงข้อมูลผ้า/ราคาจากชุดข้อมูลที่ฝังไว้ในไฟล์เท่านั้น (ไม่มีการสร้างชื่อผ้าหรือราคาขึ้นเอง)
 
-3. เพิ่ม Gemini API Key ในไฟล์ `.env`
-   ```
-   VITE_GEMINI_API_KEY=your_actual_api_key_here
-   ```
-   > สามารถขอ API Key ได้ที่ [Google AI Studio](https://aistudio.google.com/app/apikey)
+## วิธีรันดูบนเครื่อง
 
-4. ติดตั้ง dependencies
-   ```bash
-   npm install
-   ```
-
-5. รัน development server
-   ```bash
-   npm run dev
-   ```
-
-   เปิดเบราว์เซอร์ที่ `http://localhost:5173`
-
-## Build สำหรับ Production
+เปิดไฟล์ `index.html` ในเบราว์เซอร์ได้โดยตรง หรือรันเซิร์ฟเวอร์ static เบา ๆ:
 
 ```bash
-npm run build
-npm run preview
+npx serve .
 ```
 
-## Tech Stack
+## Deploy
 
-- React 18
-- Vite 5
-- React Router DOM v6
-- Google Gemini API (gemini-1.5-flash)
+เป็น static site ล้วน ๆ จึง deploy ได้ทันทีบน Vercel, Netlify, GitHub Pages หรือ Firebase Hosting โดยชี้ root ไปที่ `index.html` โดยไม่ต้องตั้งค่า build command

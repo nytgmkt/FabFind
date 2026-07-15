@@ -379,7 +379,7 @@
 <main>
   <section class="hero">
     <div class="wrap">
-      <div class="hero-tagline">● MVP — เริ่มต้นด้วยข้อมูลหมวดเสื้อโปโล / ยูนิฟอร์ม</div>
+      <div class="hero-tagline">● MVP — ครอบคลุมโปโล/ยูนิฟอร์ม, เสื้อยืด, เสื้อกีฬา, แฟชั่น/โอเวอร์ไซส์</div>
       <h1>กำลังมองหาผ้าสำหรับทำเสื้อแบบไหน?</h1>
       <p class="lead">บอกประเภทเสื้อ คุณสมบัติที่ต้องการ สี และงบประมาณ แล้วระบบจะช่วยค้นหาผ้าที่เหมาะสมจากข้อมูลผ้าและใบราคาที่อนุมัติจริง — ชื่อผ้า สเปก และราคาทุกตัวเลขมาจากฐานข้อมูลเท่านั้น ไม่มีการสร้างขึ้นเอง</p>
 
@@ -421,9 +421,9 @@
             <label class="flabel">ประเภทเสื้อ</label>
             <select id="fCategory" class="fselect">
               <option value="Polo / Uniform">เสื้อโปโล / ยูนิฟอร์ม</option>
-              <option value="T-Shirt">เสื้อยืด (ยังไม่มีราคา/สเปก)</option>
-              <option value="Sport">เสื้อกีฬา (ยังไม่มีราคา/สเปก)</option>
-              <option value="Fashion">แฟชั่น / โอเวอร์ไซส์ (ยังไม่มีราคา/สเปก)</option>
+              <option value="T-Shirt">เสื้อยืด</option>
+              <option value="Sport">เสื้อกีฬา</option>
+              <option value="Fashion">แฟชั่น / โอเวอร์ไซส์</option>
               <option value="Unknown">ยังไม่แน่ใจ</option>
             </select>
           </div>
@@ -523,7 +523,7 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    FabFind MVP · ข้อมูลผ้าและราคาอ้างอิงจาก <a href="https://www.teeculture.com/fabric-technology/" target="_blank" rel="noopener">Tee Culture Fabric Technology</a> และใบราคาที่ได้รับอนุมัติ (มีผล 20 พ.ย. 2568) · เวอร์ชันนี้ครอบคลุมเฉพาะหมวดเสื้อโปโล/ยูนิฟอร์ม
+    FabFind MVP · ข้อมูลผ้าและราคาอ้างอิงจาก <a href="https://www.teeculture.com/fabric-technology/" target="_blank" rel="noopener">Tee Culture Fabric Technology</a> และใบราคาที่ได้รับอนุมัติ (มีผล 20 พ.ย. 2568) · ครอบคลุมหมวดเสื้อโปโล/ยูนิฟอร์ม, เสื้อยืด, เสื้อกีฬา และแฟชั่น/โอเวอร์ไซส์
   </div>
 </footer>
 
@@ -686,29 +686,299 @@ const PRODUCTS = [
     website_url:"https://www.teeculture.com/elitech/",
     catalog_url:"https://www.teeculture.com/media/Elitech101.pdf",
     price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
-  }
+  },
+  {
+    id:"TSHIRT-TC30", category:"T-Shirt", fabric_name:"TC30 หน้าเรียบ",
+    technology_group:"TC30", composition:"C35:T65", width_inch:36, gsm:170, yard_per_kg:3.4,
+    price:{white:170, light:180, medium:195, dark:215, top_dye:null},
+    best_seller:false,
+    benefit_tags:["breathable", "easy_care", "affordable"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอนผสมโพลีเอสเตอร์ น้ำหนักเบา ราคาเข้าถึงได้ เหมาะกับเสื้อยืดแจกงานหรือองค์กรที่เน้นงบประหยัด",
+    website_url:"https://www.teeculture.com/tc30", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-CVC24", category:"T-Shirt", fabric_name:"CVC24 หน้าเรียบ",
+    technology_group:"CVC24", composition:"C63:T37", width_inch:70, gsm:180, yard_per_kg:3.3,
+    price:{white:175, light:185, medium:200, dark:215, top_dye:null},
+    best_seller:false,
+    benefit_tags:["breathable", "soft_touch"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอนเป็นส่วนใหญ่ผสมโพลีเอสเตอร์ หน้าผ้ากว้าง สัมผัสนุ่ม ระบายอากาศดี",
+    website_url:"https://www.teeculture.com/cvc24-cotton-polyester", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-SC20", category:"T-Shirt", fabric_name:"SC20 หน้าเรียบ (ขาว, ดำ, กรม)",
+    technology_group:"SC20", composition:"C100", width_inch:37, gsm:195, yard_per_kg:3.0,
+    price:{white:200, light:210, medium:230, dark:255, top_dye:null},
+    best_seller:false,
+    benefit_tags:["soft_touch", "breathable"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% ทอแบบ Single Jersey มีเฉพาะสีขาว ดำ กรมท่า",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-CM20", category:"T-Shirt", fabric_name:"CM20 หน้าเรียบ (ขาว, ดำ)",
+    technology_group:"CM20", composition:"C100", width_inch:36, gsm:195, yard_per_kg:3.0,
+    price:{white:220, light:235, medium:260, dark:270, top_dye:null},
+    best_seller:false,
+    benefit_tags:["soft_touch", "breathable"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% เส้นด้ายคอมแบด สัมผัสนุ่มกว่า SC มีเฉพาะสีขาว ดำ",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-SC32", category:"T-Shirt", fabric_name:"SC32 หน้าเรียบ",
+    technology_group:"SC32", composition:"C100", width_inch:36, gsm:150, yard_per_kg:4.0,
+    price:{white:205, light:215, medium:235, dark:260, top_dye:null},
+    best_seller:false,
+    benefit_tags:["soft_touch", "breathable"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% น้ำหนักเบา 150 GSM เหมาะกับเสื้อยืดใส่สบายหน้าร้อน",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-CM30", category:"T-Shirt", fabric_name:"CM30 หน้าเรียบ",
+    technology_group:"CM30", composition:"C100", width_inch:36, gsm:155, yard_per_kg:3.8,
+    price:{white:230, light:240, medium:260, dark:285, top_dye:null},
+    best_seller:false,
+    benefit_tags:["soft_touch", "breathable"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% เส้นด้ายคอมแบด น้ำหนักปานกลาง เนื้อเนียนนุ่ม",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-CM30-TOPDYE", category:"T-Shirt", fabric_name:"CM30 หน้าเรียบ (ท็อปดาย)",
+    technology_group:"CM30", composition:"C100", width_inch:68, gsm:150, yard_per_kg:4.1,
+    price:{white:null, light:null, medium:null, dark:null, top_dye:295},
+    best_seller:false,
+    benefit_tags:["soft_touch", "breathable"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% รุ่นท็อปดาย รองรับการกำหนดโทนสีพิเศษ",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-SUPERSOFF-20", category:"T-Shirt", fabric_name:"Supersoff #20",
+    technology_group:"Supersoff", composition:"C100", width_inch:68, gsm:190, yard_per_kg:3.2,
+    price:{white:280, light:295, medium:325, dark:355, top_dye:295},
+    best_seller:true,
+    benefit_tags:["soft_touch"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% เนื้อนุ่มพิเศษตามชื่อรุ่น Best Seller ของหมวดเสื้อยืด",
+    website_url:"https://www.teeculture.com/supersoff/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-SUPERSOFF-20-TOPDYE", category:"T-Shirt", fabric_name:"Supersoff #20 (ท็อปดาย)",
+    technology_group:"Supersoff", composition:"C100", width_inch:70, gsm:180, yard_per_kg:3.2,
+    price:{white:null, light:null, medium:null, dark:null, top_dye:315},
+    best_seller:false,
+    benefit_tags:["soft_touch"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้า Supersoff #20 รุ่นท็อปดาย รองรับการกำหนดโทนสีพิเศษ",
+    website_url:"https://www.teeculture.com/supersoff/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-SUPERSOFF-30", category:"T-Shirt", fabric_name:"Supersoff #30",
+    technology_group:"Supersoff", composition:"C100", width_inch:68, gsm:150, yard_per_kg:4.1,
+    price:{white:290, light:305, medium:335, dark:365, top_dye:null},
+    best_seller:true,
+    benefit_tags:["soft_touch"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% Supersoff น้ำหนักเบากว่ารุ่น #20 ยังคงความนุ่มไว้",
+    website_url:"https://www.teeculture.com/supersoff/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-SUPERSOFF-20X1", category:"T-Shirt", fabric_name:"Supersoff 20x1",
+    technology_group:"Supersoff", composition:"C60:T40", width_inch:68, gsm:190, yard_per_kg:3.2,
+    price:{white:295, light:295, medium:295, dark:295, top_dye:null},
+    best_seller:true,
+    benefit_tags:["soft_touch", "easy_care"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้า Supersoff ผสมโพลีเอสเตอร์ ราคาเดียวทุกกลุ่มสี ดูแลรักษาง่ายกว่าคอตตอนแท้",
+    website_url:"https://www.teeculture.com/supersoff/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-COTTON25-HEAVY", category:"T-Shirt", fabric_name:"Cotton 25 Heavy",
+    technology_group:"Cotton 25 Heavy", composition:"C100", width_inch:54, gsm:260, yard_per_kg:2.9,
+    price:{white:235, light:245, medium:270, dark:295, top_dye:null},
+    best_seller:true,
+    benefit_tags:["soft_touch", "shape_retention"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% น้ำหนักหนา 260 GSM คงรูปดี เหมาะกับเสื้อยืดทรงหนา",
+    website_url:"https://www.teeculture.com/cotton25/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-DRYTECH-AIR", category:"T-Shirt", fabric_name:"Dry-Tech Air",
+    technology_group:"Dry-Tech Air", composition:"C54:T46", width_inch:74, gsm:180, yard_per_kg:3.1,
+    price:{white:305, light:315, medium:325, dark:335, top_dye:null},
+    best_seller:true,
+    benefit_tags:["breathable", "quick_dry", "moisture_management"],
+    usage_tags:["uniform", "outdoor", "sport"],
+    short_description:"ผ้าเทคโนโลยี Dry-Tech ผสมคอตตอน ระบายอากาศดี แห้งไว เหมาะกับเสื้อยืดใส่ทำกิจกรรม",
+    website_url:"https://www.teeculture.com/dry-tech-air/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-COTTON-PRIME", category:"T-Shirt", fabric_name:"Cotton Prime",
+    technology_group:"Cotton Prime", composition:"C69:T24:SPD7", width_inch:54, gsm:230, yard_per_kg:3.3,
+    price:{white:305, light:315, medium:325, dark:335, top_dye:null},
+    best_seller:true,
+    benefit_tags:["soft_touch", "stretch"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอนผสมสแปนเด็กซ์ ยืดหยุ่นใส่สบาย เนื้อพรีเมียม",
+    website_url:"https://www.teeculture.com/cotton-prime/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-CM40-INTERLOCK", category:"T-Shirt", fabric_name:"CM40 Interlock SPE",
+    technology_group:"CM40 Interlock SPE", composition:"C100", width_inch:68, gsm:240, yard_per_kg:2.5,
+    price:{white:280, light:290, medium:320, dark:350, top_dye:null},
+    best_seller:true,
+    benefit_tags:["soft_touch", "shape_retention"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอน 100% ทอแบบ Interlock สองหน้าเรียบ หนาและคงรูปดี",
+    website_url:"https://www.teeculture.com/comb40interlock-spe", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"TSHIRT-STRETCH597", category:"T-Shirt", fabric_name:"Stretch597",
+    technology_group:"Stretch597", composition:"C56:T40:SPD4", width_inch:66, gsm:165, yard_per_kg:3.8,
+    price:{white:300, light:340, medium:340, dark:340, top_dye:null},
+    best_seller:false,
+    benefit_tags:["stretch", "soft_touch"],
+    usage_tags:["uniform", "event"],
+    short_description:"ผ้าคอตตอนผสมสแปนเด็กซ์ ยืดหยุ่นสูง เหมาะกับเสื้อยืดทรงเข้ารูป",
+    website_url:"https://www.teeculture.com/stretch597/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"FASHION-BABY-FRENCH-TERRY", category:"Fashion", fabric_name:"Baby French Terry",
+    technology_group:"Baby French Terry", composition:"C60:T40", width_inch:72, gsm:210, yard_per_kg:2.7,
+    price:{white:210, light:220, medium:240, dark:260, top_dye:null},
+    best_seller:false,
+    benefit_tags:["soft_touch", "shape_retention"],
+    usage_tags:["event"],
+    short_description:"ผ้าเฟรนช์เทอร์รี่เนื้อบาง ผิวด้านในเป็นห่วงนุ่ม เหมาะกับเสื้อยืดโอเวอร์ไซส์และแฟชั่น",
+    website_url:"https://www.teeculture.com/babyfrenchterry/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"FASHION-RIB22-CVC320S", category:"Fashion", fabric_name:"RIB22 CVC-320S (Rib2x2)",
+    technology_group:"RIB22 CVC-320S", composition:"C58:T38:SPD4", width_inch:60, gsm:320, yard_per_kg:2.1,
+    price:{white:210, light:220, medium:240, dark:260, top_dye:null},
+    best_seller:false,
+    benefit_tags:["stretch", "shape_retention"],
+    usage_tags:["event"],
+    short_description:"ผ้าริบ 2x2 ผสมสแปนเด็กซ์ เนื้อหนา คงรูปดี นิยมใช้ตัดต่อชายเสื้อ/แขนเสื้อแฟชั่น",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"FASHION-FRENCH-TERRY310", category:"Fashion", fabric_name:"French Terry310",
+    technology_group:"French Terry310", composition:"C60:T40", width_inch:74, gsm:310, yard_per_kg:1.8,
+    price:{white:250, light:260, medium:285, dark:310, top_dye:null},
+    best_seller:false,
+    benefit_tags:["soft_touch", "shape_retention"],
+    usage_tags:["event"],
+    short_description:"ผ้าเฟรนช์เทอร์รี่น้ำหนักหนา 310 GSM ให้ความอบอุ่น เหมาะกับเสื้อทรงหลวมและสวมใส่หน้าหนาว",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"FASHION-RIB22-350S", category:"Fashion", fabric_name:"RIB22-350S (Rib2x2)",
+    technology_group:"RIB22-350S", composition:"C59:T39:SPD2", width_inch:52, gsm:350, yard_per_kg:2.2,
+    price:{white:250, light:260, medium:285, dark:310, top_dye:null},
+    best_seller:false,
+    benefit_tags:["stretch", "shape_retention"],
+    usage_tags:["event"],
+    short_description:"ผ้าริบ 2x2 ผสมสแปนเด็กซ์ น้ำหนักหนากว่ารุ่น CVC-320S เหมาะกับงานตัดต่อเสื้อทรงหนา",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"FASHION-DRYTECH-601", category:"Fashion", fabric_name:"Dry-Tech 601 (Double Knitted)",
+    technology_group:"Dry-Tech 601", composition:"C65:T35", width_inch:64, gsm:330, yard_per_kg:2.0,
+    price:{white:305, light:315, medium:325, dark:335, top_dye:null},
+    best_seller:false,
+    benefit_tags:["breathable", "quick_dry", "moisture_management", "shape_retention"],
+    usage_tags:["event", "outdoor"],
+    short_description:"ผ้าเทคโนโลยี Dry-Tech ทอสองชั้น (Double Knitted) หนาและคงรูป ระบายอากาศได้ดี",
+    website_url:"https://www.teeculture.com/fabric-technology/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"SPORT-SYNTREL-ST107", category:"Sport", fabric_name:"Syntrel ST107",
+    technology_group:"Syntrel", composition:"T100", width_inch:64, gsm:140, yard_per_kg:4.6,
+    price:{white:235, light:235, medium:235, dark:235, top_dye:null},
+    best_seller:false,
+    benefit_tags:["quick_dry", "moisture_management", "breathable"],
+    usage_tags:["sport", "outdoor"],
+    short_description:"ผ้าโพลีเอสเตอร์ 100% เนื้อบาง 140 GSM ราคาเดียวทุกสี เหมาะกับเสื้อกีฬาน้ำหนักเบา",
+    website_url:"https://www.teeculture.com/syntrel/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"SPORT-SYNTREL-ST109S", category:"Sport", fabric_name:"Syntrel ST109S",
+    technology_group:"Syntrel", composition:"T91:SPD9", width_inch:60, gsm:160, yard_per_kg:4.3,
+    price:{white:270, light:null, medium:null, dark:null, top_dye:null},
+    best_seller:false,
+    benefit_tags:["quick_dry", "moisture_management", "stretch"],
+    usage_tags:["sport", "outdoor"],
+    short_description:"ผ้าโพลีเอสเตอร์ผสมสแปนเด็กซ์ มีเฉพาะสีขาวเป็นสต็อก (270 บาท/กก.) สีอื่นสั่งผลิตราคา 290 บาท/กก.",
+    website_url:"https://www.teeculture.com/syntrel/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"SPORT-SYNTREL-ST222", category:"Sport", fabric_name:"Syntrel ST222",
+    technology_group:"Syntrel", composition:"T100", width_inch:60, gsm:140, yard_per_kg:4.9,
+    price:{white:250, light:250, medium:250, dark:250, top_dye:null},
+    best_seller:false,
+    benefit_tags:["quick_dry", "moisture_management", "breathable"],
+    usage_tags:["sport", "outdoor"],
+    short_description:"ผ้าโพลีเอสเตอร์ 100% ราคาเดียวทุกสี เหมาะกับเสื้อกีฬาทั่วไป",
+    website_url:"https://www.teeculture.com/syntrel/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"SPORT-SYNTREL-ST222-NONAB", category:"Sport", fabric_name:"Syntrel ST222 Non-Anti Bacterial",
+    technology_group:"Syntrel", composition:"T100", width_inch:60, gsm:140, yard_per_kg:4.9,
+    price:{white:220, light:220, medium:220, dark:220, top_dye:null},
+    best_seller:false,
+    benefit_tags:["quick_dry", "moisture_management"],
+    usage_tags:["sport", "outdoor"],
+    short_description:"ผ้าโพลีเอสเตอร์ 100% รุ่นไม่มีสาร Anti-Bacterial เฉพาะสั่งผลิตเท่านั้น",
+    website_url:"https://www.teeculture.com/syntrel/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
+  {
+    id:"SPORT-SYNTREL-ST501", category:"Sport", fabric_name:"Syntrel ST501",
+    technology_group:"Syntrel", composition:"T100", width_inch:62, gsm:240, yard_per_kg:2.8,
+    price:{white:255, light:255, medium:255, dark:255, top_dye:null},
+    best_seller:false,
+    benefit_tags:["quick_dry", "moisture_management", "shape_retention"],
+    usage_tags:["sport", "outdoor"],
+    short_description:"ผ้าโพลีเอสเตอร์ 100% น้ำหนักหนา 240 GSM คงรูปดี เหมาะกับเสื้อกีฬาที่ต้องการความหนา",
+    website_url:"https://www.teeculture.com/syntrel/", catalog_url:null,
+    price_effective_date:"2025-11-20", source_note:"Approved Price List (customer-supplied, 20 Nov 2025)"
+  },
 ];
 
-/* Fabric technologies Tee Culture offers for categories the MVP doesn't have
-   priced product data for yet (from Fabric Technology reference sheet).
-   Shown as name + real source link only — never priced/specced. */
+/* Fabric technologies Tee Culture offers that the approved price list does
+   not cover yet — shown as name + real source link only, never priced/specced. */
 const CATALOG_ONLY = {
-  "T-Shirt": [
-    { name:"Supersoff", url:"https://www.teeculture.com/supersoff/" },
-    { name:"Cotton", url:"https://www.teeculture.com/cotton" },
-    { name:"CVC24 หน้าเรียบ", url:"https://www.teeculture.com/cvc24-cotton-polyester" },
-    { name:"Stretch597", url:"https://www.teeculture.com/stretch597/" },
-    { name:"TC30", url:"https://www.teeculture.com/tc30" },
-  ],
-  "Sport": [
-    { name:"Syntrel", url:"https://www.teeculture.com/syntrel/" },
-  ],
   "Fashion": [
-    { name:"Dry-Tech Air", url:"https://www.teeculture.com/dry-tech-air/" },
-    { name:"Cotton Prime", url:"https://www.teeculture.com/cotton-prime/" },
-    { name:"CM40 Interlock SPE", url:"https://www.teeculture.com/comb40interlock-spe" },
-    { name:"Cotton25 Heavy", url:"https://www.teeculture.com/cotton25/" },
-    { name:"Baby French Terry", url:"https://www.teeculture.com/babyfrenchterry/" },
     { name:"Fashion House", url:"https://www.teeculture.com/fashionhouse/" },
   ],
 };
@@ -773,6 +1043,8 @@ const CATEGORY_KEYWORDS = {
   ],
 };
 
+const FALLBACK_FABRIC_URL = "https://www.teeculture.com/fabric-technology/";
+
 const GROUP_INFO = {
   "TC Lacoste":{ url:"https://www.teeculture.com/tc-lacoste/", catalog:"https://www.teeculture.com/media/TC-Lacoste.pdf",
     blurb:"ผ้าโปโลผสม Cotton/Polyester ราคาเข้าถึงได้ นุ่มสบาย คงรูปดี" },
@@ -785,7 +1057,25 @@ const GROUP_INFO = {
   "Dry-Tech":{ url:"https://www.teeculture.com/dry-tech/", catalog:"https://www.teeculture.com/media/Drytech.pdf",
     blurb:"เทคโนโลยีทอสองชั้น ระบายอากาศ แห้งไว มี 3 รุ่น: 201 / 202 / 401" },
   "Elitech 101":{ url:"https://www.teeculture.com/elitech/", catalog:"https://www.teeculture.com/media/Elitech101.pdf",
-    blurb:"ผ้าลาย Oxford ผสม Pima Cotton พรีเมียม สำหรับเสื้อเชิ้ต/โปโลระดับสูง" }
+    blurb:"ผ้าลาย Oxford ผสม Pima Cotton พรีเมียม สำหรับเสื้อเชิ้ต/โปโลระดับสูง" },
+  "TC30":{ url:"https://www.teeculture.com/tc30", blurb:"ผ้าคอตตอนผสมโพลีเอสเตอร์ น้ำหนักเบา ราคาเข้าถึงได้" },
+  "CVC24":{ url:"https://www.teeculture.com/cvc24-cotton-polyester", blurb:"ผ้าคอตตอนเป็นส่วนใหญ่ผสมโพลีเอสเตอร์ หน้าผ้ากว้าง" },
+  "SC20":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าคอตตอน 100% ทอแบบ Single Jersey" },
+  "CM20":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าคอตตอน 100% เส้นด้ายคอมแบด" },
+  "SC32":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าคอตตอน 100% น้ำหนักเบา" },
+  "CM30":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าคอตตอน 100% เส้นด้ายคอมแบด น้ำหนักปานกลาง มีรุ่นท็อปดาย" },
+  "Supersoff":{ url:"https://www.teeculture.com/supersoff/", blurb:"ผ้าคอตตอนเนื้อนุ่มพิเศษ มีหลายรุ่นน้ำหนักและตัวเลือกท็อปดาย" },
+  "Cotton 25 Heavy":{ url:"https://www.teeculture.com/cotton25/", blurb:"ผ้าคอตตอน 100% น้ำหนักหนา คงรูปดี" },
+  "Dry-Tech Air":{ url:"https://www.teeculture.com/dry-tech-air/", blurb:"ผ้าเทคโนโลยี Dry-Tech ผสมคอตตอน ระบายอากาศดี แห้งไว" },
+  "Cotton Prime":{ url:"https://www.teeculture.com/cotton-prime/", blurb:"ผ้าคอตตอนผสมสแปนเด็กซ์ ยืดหยุ่นใส่สบาย" },
+  "CM40 Interlock SPE":{ url:"https://www.teeculture.com/comb40interlock-spe", blurb:"ผ้าคอตตอน 100% ทอแบบ Interlock หนาและคงรูปดี" },
+  "Stretch597":{ url:"https://www.teeculture.com/stretch597/", blurb:"ผ้าคอตตอนผสมสแปนเด็กซ์ ยืดหยุ่นสูง" },
+  "Baby French Terry":{ url:"https://www.teeculture.com/babyfrenchterry/", blurb:"ผ้าเฟรนช์เทอร์รี่เนื้อบาง เหมาะกับเสื้อโอเวอร์ไซส์" },
+  "RIB22 CVC-320S":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าริบ 2x2 ผสมสแปนเด็กซ์ ใช้ตัดต่อชายเสื้อ/แขนเสื้อ" },
+  "French Terry310":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าเฟรนช์เทอร์รี่น้ำหนักหนา ให้ความอบอุ่น" },
+  "RIB22-350S":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าริบ 2x2 ผสมสแปนเด็กซ์ น้ำหนักหนา" },
+  "Dry-Tech 601":{ url:FALLBACK_FABRIC_URL, blurb:"ผ้าเทคโนโลยี Dry-Tech ทอสองชั้น หนาและคงรูป" },
+  "Syntrel":{ url:"https://www.teeculture.com/syntrel/", blurb:"ผ้าโพลีเอสเตอร์กีฬา แห้งไว ระบายอากาศดี มีหลายรุ่นน้ำหนัก" }
 };
 
 const CATEGORY_LABELS = {
@@ -890,7 +1180,7 @@ function parseQuery(text){
     shape_retention:["คงรูป","ไม่เสียทรง","ทรงสวย"],
     easy_care:["ดูแลรักษาง่าย","ดูแลง่าย"],
     no_iron:["ไม่ต้องรีด","ไม่ยับ","ยับยาก"],
-    stretch:["ยืดหยุ่น","ยืด"],
+    stretch:["ยืดหยุ่น"],
     soft_touch:["นุ่ม","สัมผัสนุ่ม"],
     color_fastness:["สีไม่ซีด","สีคงทน","สีสด"],
     antibacterial:["แบคทีเรีย","ยับยั้งเชื้อ"],
@@ -1047,12 +1337,13 @@ function renderNoResult(category){
   const text = document.getElementById("noResultText");
   const catalogList = document.getElementById("catalogOnlyList");
   const suggestRow = document.getElementById("suggestRow");
-  const catalog = category ? CATALOG_ONLY[category] : null;
+  const categoryHasProducts = category ? PRODUCTS.some(p=>p.category===category) : true;
+  const catalog = (!categoryHasProducts && category) ? CATALOG_ONLY[category] : null;
 
   if(catalog && catalog.length){
     const catLabel = CATEGORY_LABELS[category] || category;
     title.textContent = `หมวด "${catLabel}" ยังไม่มีราคา/สเปกในระบบค้นหา`;
-    text.textContent = `ตอนนี้ระบบมีข้อมูลราคาและสเปกครบเฉพาะหมวดเสื้อโปโล/ยูนิฟอร์ม แต่ Tee Culture มีเทคโนโลยีผ้าต่อไปนี้สำหรับหมวด "${catLabel}" — คลิกเพื่อดูข้อมูลผ้าที่หน้าเว็บไซต์ต้นทาง`;
+    text.textContent = `Tee Culture มีเทคโนโลยีผ้าต่อไปนี้สำหรับหมวด "${catLabel}" แต่ยังไม่มีราคาที่อนุมัติในระบบ — คลิกเพื่อดูข้อมูลผ้าที่หน้าเว็บไซต์ต้นทาง`;
     catalogList.style.display = "flex";
     catalogList.innerHTML = catalog.map(f => `
       <a class="icon-btn" href="${f.url}" target="_blank" rel="noopener" style="justify-content:space-between;">
@@ -1060,10 +1351,10 @@ function renderNoResult(category){
       </a>
     `).join("");
     suggestRow.style.display = "none";
-  } else if(category && category!=="Polo / Uniform" && category!=="Unknown"){
+  } else if(!categoryHasProducts && category && category!=="Unknown"){
     const catLabel = CATEGORY_LABELS[category] || category;
     title.textContent = "ยังไม่พบผ้าที่ตรงครบทุกเงื่อนไข";
-    text.textContent = `หมวด "${catLabel}" ยังไม่มีข้อมูลในฐานข้อมูล MVP กรุณาลองเลือกหมวด เสื้อโปโล / ยูนิฟอร์ม`;
+    text.textContent = `หมวด "${catLabel}" ยังไม่มีข้อมูลในฐานข้อมูล MVP กรุณาลองเลือกหมวดอื่น`;
     catalogList.style.display = "none";
     catalogList.innerHTML = "";
     suggestRow.style.display = "flex";
@@ -1156,7 +1447,7 @@ function buildCard(e, kind, idx){
     <div class="tag-list">${tagsHtml}</div>
     <div class="tag-actions">
       <a class="icon-btn" href="${p.website_url}" target="_blank" rel="noopener">📄 ดูรายละเอียดผ้า</a>
-      <a class="icon-btn catalog" href="${p.catalog_url}" target="_blank" rel="noopener">⬇ โหลดแคตตาล็อก</a>
+      ${p.catalog_url ? `<a class="icon-btn catalog" href="${p.catalog_url}" target="_blank" rel="noopener">⬇ โหลดแคตตาล็อก</a>` : ""}
       <button class="icon-btn" onclick="copyProductInfo('${p.id}')">⧉ คัดลอกข้อมูล</button>
       <button class="icon-btn" onclick="openDetail('${p.id}')">🔎 ดูสเปกเต็ม</button>
     </div>
@@ -1173,8 +1464,8 @@ function copyProductInfo(id){
   const text = `${p.fabric_name} (${p.technology_group})
 Composition: ${p.composition} | หน้าผ้า ${p.width_inch}" | GSM ${p.gsm} | ${p.yard_per_kg} หลา/กก.
 ราคา ${colorLabel}: ${price} บาท/กก. (ไม่รวม VAT 7%, มีผล 20 พ.ย. 2568)
-รายละเอียด: ${p.website_url}
-แคตตาล็อก: ${p.catalog_url}`;
+รายละเอียด: ${p.website_url}${p.catalog_url ? `
+แคตตาล็อก: ${p.catalog_url}` : ""}`;
   navigator.clipboard?.writeText(text).then(()=>showToast("คัดลอกข้อมูลผ้าแล้ว"));
 }
 
@@ -1227,7 +1518,7 @@ function openDetail(id){
         <div class="tag-list" style="margin-top:10px;">${p.benefit_tags.map(b=>`<span class="btag">${BENEFIT_LABELS[b]}</span>`).join("")}</div>
         <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
           <a class="btn btn-primary btn-sm" href="${p.website_url}" target="_blank" rel="noopener">เปิดหน้าเว็บไซต์ต้นฉบับ</a>
-          <a class="btn btn-ghost btn-sm" href="${p.catalog_url}" target="_blank" rel="noopener">โหลดแคตตาล็อก PDF</a>
+          ${p.catalog_url ? `<a class="btn btn-ghost btn-sm" href="${p.catalog_url}" target="_blank" rel="noopener">โหลดแคตตาล็อก PDF</a>` : ""}
         </div>
       </div>
       <div>
@@ -1291,73 +1582,97 @@ function clearAll(){
 /* ---------------- browse tree ---------------- */
 function buildTree(){
   const root = document.getElementById("treeRoot");
-  const groups = {};
-  PRODUCTS.forEach(p=>{ (groups[p.technology_group] = groups[p.technology_group]||[]).push(p); });
+  const byCategory = {};
+  PRODUCTS.forEach(p=>{ (byCategory[p.category] = byCategory[p.category]||[]).push(p); });
+  const categoryGroupsWrap = {};
 
-  const catBox = document.createElement("div");
-  catBox.className = "tree-cat open";
-  catBox.innerHTML = `<div class="tree-cat-head" onclick="this.parentElement.classList.toggle('open')">
-      <h3>เสื้อโปโล / ยูนิฟอร์ม <span class="count">(${Object.keys(groups).length} กลุ่มเทคโนโลยีผ้า · ${PRODUCTS.length} รายการ)</span></h3>
-      <span class="chev">▾</span>
-    </div>
-    <div class="tree-groups" id="treeGroups"></div>`;
-  root.appendChild(catBox);
-  const groupsWrap = catBox.querySelector("#treeGroups");
+  Object.keys(CATEGORY_LABELS).forEach(category=>{
+    const catProducts = byCategory[category];
+    if(!catProducts || !catProducts.length) return;
+    const catLabel = CATEGORY_LABELS[category] || category;
 
-  Object.entries(groups).forEach(([groupName, items])=>{
-    const info = GROUP_INFO[groupName] || {};
-    const g = document.createElement("div");
-    g.className = "tree-group";
-    g.innerHTML = `
-      <div class="tree-group-head" onclick="this.parentElement.classList.toggle('open')">
-        <span class="name">🧵 ${groupName} <span class="count">(${items.length} รายการ)</span></span>
+    const groups = {};
+    catProducts.forEach(p=>{ (groups[p.technology_group] = groups[p.technology_group]||[]).push(p); });
+
+    const catBox = document.createElement("div");
+    catBox.className = "tree-cat" + (category==="Polo / Uniform" ? " open" : "");
+    catBox.innerHTML = `<div class="tree-cat-head" onclick="this.parentElement.classList.toggle('open')">
+        <h3>${catLabel} <span class="count">(${Object.keys(groups).length} กลุ่มเทคโนโลยีผ้า · ${catProducts.length} รายการ)</span></h3>
         <span class="chev">▾</span>
       </div>
-      <div class="tree-group-body">
-        <p class="group-blurb">${info.blurb||""}</p>
-        <div class="group-catalog-all">
-          <a class="icon-btn catalog" href="${info.catalog}" target="_blank" rel="noopener">⬇ โหลดแคตตาล็อกกลุ่ม ${groupName}</a>
-          <a class="icon-btn" href="${info.url}" target="_blank" rel="noopener">📄 ดูข้อมูลผ้าเทคโนโลยีนี้</a>
+      <div class="tree-groups"></div>`;
+    root.appendChild(catBox);
+    const groupsWrap = catBox.querySelector(".tree-groups");
+    categoryGroupsWrap[category] = groupsWrap;
+
+    Object.entries(groups).forEach(([groupName, items])=>{
+      const info = GROUP_INFO[groupName] || {};
+      const g = document.createElement("div");
+      g.className = "tree-group";
+      g.innerHTML = `
+        <div class="tree-group-head" onclick="this.parentElement.classList.toggle('open')">
+          <span class="name">🧵 ${groupName} <span class="count">(${items.length} รายการ)</span></span>
+          <span class="chev">▾</span>
         </div>
-        <div class="fabric-list">
-          ${items.map(p=>`
-            <div class="fabric-row">
-              <div>
-                <div class="fname">${p.fabric_name}${p.best_seller? ' <span class="badge bestseller" style="margin-left:6px;">Best Seller</span>':''}</div>
-                <div class="fspec">${p.composition} · หน้าผ้า ${p.width_inch}" · ${p.gsm} GSM · ราคาเริ่มต้น ${Math.min(...Object.values(p.price).filter(v=>v!=null))} บาท/กก.</div>
-              </div>
-              <div class="row-actions">
-                <button class="icon-btn" onclick="openDetail('${p.id}')">สเปก</button>
-                <a class="icon-btn" href="${p.website_url}" target="_blank" rel="noopener">เว็บไซต์</a>
-                <a class="icon-btn catalog" href="${p.catalog_url}" target="_blank" rel="noopener">แคตตาล็อก</a>
-              </div>
-            </div>`).join("")}
-        </div>
-      </div>`;
-    groupsWrap.appendChild(g);
+        <div class="tree-group-body">
+          <p class="group-blurb">${info.blurb||""}</p>
+          <div class="group-catalog-all">
+            ${info.catalog ? `<a class="icon-btn catalog" href="${info.catalog}" target="_blank" rel="noopener">⬇ โหลดแคตตาล็อกกลุ่ม ${groupName}</a>` : ""}
+            ${info.url ? `<a class="icon-btn" href="${info.url}" target="_blank" rel="noopener">📄 ดูข้อมูลผ้าเทคโนโลยีนี้</a>` : ""}
+          </div>
+          <div class="fabric-list">
+            ${items.map(p=>`
+              <div class="fabric-row">
+                <div>
+                  <div class="fname">${p.fabric_name}${p.best_seller? ' <span class="badge bestseller" style="margin-left:6px;">Best Seller</span>':''}</div>
+                  <div class="fspec">${p.composition} · หน้าผ้า ${p.width_inch}" · ${p.gsm} GSM · ราคาเริ่มต้น ${Math.min(...Object.values(p.price).filter(v=>v!=null))} บาท/กก.</div>
+                </div>
+                <div class="row-actions">
+                  <button class="icon-btn" onclick="openDetail('${p.id}')">สเปก</button>
+                  <a class="icon-btn" href="${p.website_url}" target="_blank" rel="noopener">เว็บไซต์</a>
+                  ${p.catalog_url ? `<a class="icon-btn catalog" href="${p.catalog_url}" target="_blank" rel="noopener">แคตตาล็อก</a>` : ""}
+                </div>
+              </div>`).join("")}
+          </div>
+        </div>`;
+      groupsWrap.appendChild(g);
+    });
   });
 
   Object.entries(CATALOG_ONLY).forEach(([category, items])=>{
     const catLabel = CATEGORY_LABELS[category] || category;
-    const box = document.createElement("div");
-    box.className = "tree-cat";
-    box.innerHTML = `<div class="tree-cat-head" onclick="this.parentElement.classList.toggle('open')">
-        <h3>${catLabel} <span class="count">(${items.length} เทคโนโลยีผ้า · ยังไม่มีราคา/สเปกในระบบ)</span></h3>
-        <span class="chev">▾</span>
-      </div>
-      <div class="tree-groups">
-        <p class="group-blurb">Tee Culture มีผ้าหมวดนี้ แต่ระบบยังไม่ได้โหลดราคาและสเปกเข้ามา — คลิกเพื่อดูข้อมูลที่หน้าเว็บไซต์ต้นทาง</p>
-        <div class="fabric-list">
-          ${items.map(f=>`
-            <div class="fabric-row">
-              <div class="fname">🧵 ${f.name}</div>
-              <div class="row-actions">
-                <a class="icon-btn" href="${f.url}" target="_blank" rel="noopener">เว็บไซต์ ↗</a>
-              </div>
-            </div>`).join("")}
+    const catalogGroupHtml = `
+      <div class="tree-group">
+        <div class="tree-group-head" onclick="this.parentElement.classList.toggle('open')">
+          <span class="name">🏷️ ผ้าที่ยังไม่มีราคา/สเปกในระบบ <span class="count">(${items.length} รายการ)</span></span>
+          <span class="chev">▾</span>
+        </div>
+        <div class="tree-group-body">
+          <p class="group-blurb">Tee Culture มีผ้าเหล่านี้ในหมวดนี้ แต่ระบบยังไม่ได้โหลดราคาและสเปกเข้ามา — คลิกเพื่อดูข้อมูลที่หน้าเว็บไซต์ต้นทาง</p>
+          <div class="fabric-list">
+            ${items.map(f=>`
+              <div class="fabric-row">
+                <div class="fname">🧵 ${f.name}</div>
+                <div class="row-actions">
+                  <a class="icon-btn" href="${f.url}" target="_blank" rel="noopener">เว็บไซต์ ↗</a>
+                </div>
+              </div>`).join("")}
+          </div>
         </div>
       </div>`;
-    root.appendChild(box);
+
+    if(categoryGroupsWrap[category]){
+      categoryGroupsWrap[category].insertAdjacentHTML("beforeend", catalogGroupHtml);
+    } else {
+      const box = document.createElement("div");
+      box.className = "tree-cat";
+      box.innerHTML = `<div class="tree-cat-head" onclick="this.parentElement.classList.toggle('open')">
+          <h3>${catLabel} <span class="count">(${items.length} เทคโนโลยีผ้า · ยังไม่มีราคา/สเปกในระบบ)</span></h3>
+          <span class="chev">▾</span>
+        </div>
+        <div class="tree-groups">${catalogGroupHtml}</div>`;
+      root.appendChild(box);
+    }
   });
 }
 

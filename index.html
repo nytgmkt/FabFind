@@ -421,9 +421,9 @@
             <label class="flabel">ประเภทเสื้อ</label>
             <select id="fCategory" class="fselect">
               <option value="Polo / Uniform">เสื้อโปโล / ยูนิฟอร์ม</option>
-              <option value="T-Shirt">เสื้อยืด (เร็ว ๆ นี้)</option>
-              <option value="Sport">เสื้อกีฬา (เร็ว ๆ นี้)</option>
-              <option value="Fashion">แฟชั่น / โอเวอร์ไซส์ (เร็ว ๆ นี้)</option>
+              <option value="T-Shirt">เสื้อยืด (ยังไม่มีราคา/สเปก)</option>
+              <option value="Sport">เสื้อกีฬา (ยังไม่มีราคา/สเปก)</option>
+              <option value="Fashion">แฟชั่น / โอเวอร์ไซส์ (ยังไม่มีราคา/สเปก)</option>
               <option value="Unknown">ยังไม่แน่ใจ</option>
             </select>
           </div>
@@ -484,9 +484,10 @@
       </div>
 
       <div id="noResult">
-        <h3>ยังไม่พบผ้าที่ตรงครบทุกเงื่อนไข</h3>
-        <p>ลองปรับเงื่อนไขการค้นหาด้านบน หรือเลือกข้อเสนอแนะด้านล่างเพื่อขยายผลการค้นหา</p>
-        <div class="suggest-row">
+        <h3 id="noResultTitle">ยังไม่พบผ้าที่ตรงครบทุกเงื่อนไข</h3>
+        <p id="noResultText">ลองปรับเงื่อนไขการค้นหาด้านบน หรือเลือกข้อเสนอแนะด้านล่างเพื่อขยายผลการค้นหา</p>
+        <div id="catalogOnlyList" style="display:none; text-align:left; max-width:480px; margin:0 auto 16px; flex-direction:column; gap:8px;"></div>
+        <div class="suggest-row" id="suggestRow">
           <button class="btn btn-ghost btn-sm" onclick="suggestAction('budget')">เพิ่มงบประมาณ</button>
           <button class="btn btn-ghost btn-sm" onclick="suggestAction('color')">เปลี่ยนกลุ่มสี</button>
           <button class="btn btn-ghost btn-sm" onclick="suggestAction('benefits')">ลดจำนวนคุณสมบัติ</button>
@@ -688,6 +689,90 @@ const PRODUCTS = [
   }
 ];
 
+/* Fabric technologies Tee Culture offers for categories the MVP doesn't have
+   priced product data for yet (from Fabric Technology reference sheet).
+   Shown as name + real source link only — never priced/specced. */
+const CATALOG_ONLY = {
+  "T-Shirt": [
+    { name:"Supersoff", url:"https://www.teeculture.com/supersoff/" },
+    { name:"Cotton", url:"https://www.teeculture.com/cotton" },
+    { name:"CVC24 หน้าเรียบ", url:"https://www.teeculture.com/cvc24-cotton-polyester" },
+    { name:"Stretch597", url:"https://www.teeculture.com/stretch597/" },
+    { name:"TC30", url:"https://www.teeculture.com/tc30" },
+  ],
+  "Sport": [
+    { name:"Syntrel", url:"https://www.teeculture.com/syntrel/" },
+  ],
+  "Fashion": [
+    { name:"Dry-Tech Air", url:"https://www.teeculture.com/dry-tech-air/" },
+    { name:"Cotton Prime", url:"https://www.teeculture.com/cotton-prime/" },
+    { name:"CM40 Interlock SPE", url:"https://www.teeculture.com/comb40interlock-spe" },
+    { name:"Cotton25 Heavy", url:"https://www.teeculture.com/cotton25/" },
+    { name:"Baby French Terry", url:"https://www.teeculture.com/babyfrenchterry/" },
+    { name:"Fashion House", url:"https://www.teeculture.com/fashionhouse/" },
+  ],
+};
+
+/* Real search-intent phrases per shirt category (from Search Keywords
+   reference sheet) — used to classify natural-language queries. */
+const CATEGORY_KEYWORDS = {
+  "Polo / Uniform": [
+    "เสื้อโปโล", "เสื้อโปโล่", "เสื้อโปโลแขนสั้น", "เสื้อโปโลแขนยาว", "เสื้อโปโลผู้ชาย", "เสื้อโปโลผู้หญิง", "เสื้อโปโลชาย", "เสื้อโปโลหญิง",
+    "เสื้อโปโลคอปก", "เสื้อโปโลปกเชิ้ต", "เสื้อโปโลลาคอส", "เสื้อโปโลลาคอสต์", "เสื้อโปโลพนักงาน", "เสื้อโปโลบริษัท", "เสื้อโปโลองค์กร", "เสื้อโปโลยูนิฟอร์ม",
+    "เสื้อโปโลออฟฟิศ", "เสื้อโปโลทำงาน", "เสื้อโปโลข้าราชการ", "เสื้อโปโลโรงงาน", "เสื้อโปโลปัก", "เสื้อโปโลปักโลโก้", "เสื้อโปโลปักชื่อ", "เสื้อโปโลสกรีน",
+    "เสื้อโปโลสกรีนโลโก้", "เสื้อโปโลสั่งตัด", "เสื้อโปโลสั่งทำ", "เสื้อโปโลตามสั่ง", "เสื้อโปโลสั่งทำโลโก้บริษัท", "เสื้อโปโลทำเป็นทีม", "เสื้อโปโลทีม", "เสื้อโปโลคู่",
+    "เสื้อโปโลราคาถูก", "เสื้อโปโลราคาส่ง", "เสื้อโปโลขายส่ง", "เสื้อโปโลขายปลีก", "เสื้อโปโลถูกและดี", "เสื้อโปโลคุณภาพดี", "เสื้อโปโลเนื้อดี", "เสื้อโปโลผ้าดี",
+    "เสื้อโปโลผ้ายืด", "เสื้อโปโลผ้าคอตตอน", "เสื้อโปโลผ้าคอตตอน100%", "เสื้อโปโลผ้าไม่ร้อน", "เสื้อโปโลระบายอากาศ", "เสื้อโปโลใส่สบาย", "เสื้อโปโลใส่เย็น", "เสื้อโปโลไม่ร้อน",
+    "เสื้อโปโลแห้งเร็ว", "เสื้อโปโลซับเหงื่อ", "เสื้อโปโลกันยับ", "เสื้อโปโลไม่ยับ", "เสื้อโปโลไม่ลอกลาย", "เสื้อโปโลไม่ซีดสี", "เสื้อโปโลไม่หดตัว", "เสื้อโปโลยืดหยุ่น",
+    "เสื้อโปโลกีฬา", "เสื้อโปโลออกกำลังกาย", "เสื้อโปโลกอล์ฟ", "เสื้อโปโลวิ่ง", "เสื้อโปโลรีไซเคิล", "เสื้อโปโลรักษ์โลก", "เสื้อโปโลไซส์ใหญ่", "เสื้อโปโลบิ๊กไซส์",
+    "โปโล", "โปโลผ้าอะไรดี", "โปโลราคาเท่าไหร่", "โปโลยี่ห้อไหนดี", "ผ้าเสื้อโปโล", "ผ้าทำเสื้อโปโล", "ผ้าโปโล", "ผ้าโปโลเนื้อไหนดี",
+    "เนื้อผ้าเสื้อโปโล", "ผ้าเสื้อโปโลมีกี่แบบ", "ผ้าเสื้อโปโลแบบไหนดี", "ผ้า dry-tech", "ผ้าดรายเทค", "dry tech คือ", "ผ้า endurance", "ผ้าเอนดูแรนซ์",
+    "ผ้า elitech", "ผ้า tc lacoste", "ผ้า tc juti recycled", "โรงงานผลิตเสื้อโปโล", "โรงงานตัดเย็บเสื้อโปโล", "โรงงานเสื้อโปโล", "ร้านขายผ้าเสื้อโปโล", "ร้านผ้าโปโล",
+    "ซื้อผ้าเสื้อโปโล", "แหล่งซื้อผ้าโปโล", "ผ้าโปโลกรุงเทพ", "ร้านผ้าราษฎร์บูรณะ", "polo shirt", "polo t shirt", "polo shirt fabric", "เสื้อ polo",
+    "polo คือ", "polo shirt ผ้าอะไรดี", "เสื้อโปโลนันยาง", "เสื้อโปโลทีคัลเจอร์",
+  ],
+  "T-Shirt": [
+    "เสื้อยืด", "เสื้อยืดคอกลม", "เสื้อยืดคอวี", "เสื้อยืดแขนสั้น", "เสื้อยืดแขนยาว", "เสื้อยืดผู้ชาย", "เสื้อยืดผู้หญิง", "เสื้อยืดชาย",
+    "เสื้อยืดหญิง", "เสื้อยืดเปล่า", "เสื้อยืดเปล่าไม่มีลาย", "เสื้อยืดเปล่าราคาถูก", "เสื้อยืดสีพื้น", "เสื้อยืดสั่งสกรีน", "เสื้อยืดสกรีนลาย", "เสื้อยืดสกรีนโลโก้",
+    "เสื้อยืดสั่งทำ", "เสื้อยืดสั่งตัด", "เสื้อยืดพิมพ์ลาย", "เสื้อยืดทำทีม", "เสื้อยืดทำเป็นทีม", "เสื้อยืดรับปริญญา", "เสื้อยืดงานอีเว้นท์", "เสื้อยืดแจกงาน",
+    "เสื้อยืดพนักงาน", "เสื้อยืดยูนิฟอร์ม", "เสื้อยืดโรงเรียน", "เสื้อยืดนักเรียน", "เสื้อยืดราคาถูก", "เสื้อยืดราคาส่ง", "เสื้อยืดขายส่ง", "เสื้อยืดขายปลีก",
+    "เสื้อยืดคุณภาพดี", "เสื้อยืดเนื้อดี", "เสื้อยืดผ้าดี", "เสื้อยืดผ้าคอตตอน", "เสื้อยืดผ้าคอตตอน100%", "เสื้อยืดผ้าคอตตอนแท้", "เสื้อยืดผ้านุ่ม", "เสื้อยืดผ้านุ่มมาก",
+    "เสื้อยืดผ้าหนา", "เสื้อยืดผ้าบาง", "เสื้อยืดใส่สบาย", "เสื้อยืดไม่ร้อน", "เสื้อยืดไม่ยืดย้วย", "เสื้อยืดไม่หดตัว", "เสื้อยืดซักไม่ย้วย", "เสื้อยืดทนทาน",
+    "เสื้อยืดผ้ายืด", "เสื้อยืดผ้ายืดหยุ่น", "เสื้อยืดเนื้อผ้านิ่ม", "เสื้อยืดคอตตอนพรีเมียม", "ผ้าเสื้อยืด", "ผ้าทำเสื้อยืด", "ผ้าเสื้อยืดเนื้อไหนดี", "เนื้อผ้าเสื้อยืด",
+    "ผ้าเสื้อยืดมีกี่แบบ", "ผ้าคอตตอนคืออะไร", "ผ้า cotton", "ผ้า supersoff", "ผ้าซุปเปอร์ซอฟ", "ผ้า cvc24", "ผ้า cvc คือ", "ผ้า stretch597",
+    "ผ้าสเตรช", "ผ้า tc30", "โรงงานผลิตเสื้อยืด", "โรงงานตัดเย็บเสื้อยืด", "โรงงานเสื้อยืด", "ร้านขายผ้าเสื้อยืด", "ร้านผ้าเสื้อยืด", "ซื้อผ้าเสื้อยืด",
+    "แหล่งซื้อผ้าเสื้อยืด", "ผ้าเสื้อยืดกรุงเทพ", "t shirt", "t-shirt fabric", "cotton t shirt", "เสื้อ t shirt", "เสื้อยืดสีขาว", "เสื้อยืดสีดำ",
+    "เสื้อยืดไซส์ใหญ่", "เสื้อยืดบิ๊กไซส์", "เสื้อยืดทีคัลเจอร์", "teeculture เสื้อยืด", "เสื้อยืดผลิตในไทย", "เสื้อยืด made in thailand", "เสื้อยืดของขวัญ", "เสื้อยืดครอบครัว",
+    "เสื้อยืดคู่รัก", "เสื้อยืดใส่นอน", "เสื้อยืดใส่ออกกำลังกาย", "เสื้อยืดวินเทจ", "เสื้อยืดสตรีท",
+  ],
+  "Sport": [
+    "เสื้อกีฬา", "เสื้อกีฬาแขนสั้น", "เสื้อกีฬาแขนยาว", "เสื้อกีฬาผู้ชาย", "เสื้อกีฬาผู้หญิง", "เสื้อกีฬาวิ่ง", "เสื้อวิ่ง", "เสื้อวิ่งมาราธอน",
+    "เสื้อออกกำลังกาย", "เสื้อฟิตเนส", "เสื้อยิม", "เสื้อกีฬาฟุตบอล", "เสื้อฟุตบอล", "เสื้อทีมฟุตบอล", "เสื้อกีฬาบาสเกตบอล", "เสื้อบาส",
+    "เสื้อกีฬาวอลเลย์บอล", "เสื้อกีฬาแบดมินตัน", "เสื้อแบด", "เสื้อกีฬาจักรยาน", "เสื้อปั่นจักรยาน", "เสื้อกีฬายิม", "เสื้อกีฬาซับเหงื่อ", "เสื้อซับเหงื่อ",
+    "เสื้อกีฬาแห้งเร็ว", "เสื้อแห้งเร็ว", "เสื้อกีฬาระบายอากาศ", "เสื้อระบายอากาศ", "เสื้อกีฬาเย็นสบาย", "เสื้อกีฬาไม่ร้อน", "เสื้อกีฬาน้ำหนักเบา", "เสื้อกีฬาใส่สบาย",
+    "เสื้อกีฬาสั่งทำ", "เสื้อกีฬาสั่งตัด", "เสื้อกีฬาสกรีน", "เสื้อกีฬาสกรีนโลโก้", "เสื้อกีฬาสกรีนหมายเลข", "เสื้อกีฬาทำทีม", "เสื้อกีฬาทำเป็นทีม", "เสื้อทีม",
+    "เสื้อกีฬาองค์กร", "เสื้อกีฬาบริษัท", "เสื้อกีฬางานวิ่ง", "เสื้อกีฬาอีเว้นท์", "เสื้อกีฬาราคาถูก", "เสื้อกีฬาราคาส่ง", "เสื้อกีฬาขายส่ง", "เสื้อกีฬาคุณภาพดี",
+    "เสื้อกีฬาเนื้อดี", "เสื้อกีฬาผ้าดี", "ผ้าเสื้อกีฬา", "ผ้าทำเสื้อกีฬา", "ผ้าเสื้อกีฬาเนื้อไหนดี", "เนื้อผ้าเสื้อกีฬา", "ผ้าเสื้อกีฬามีกี่แบบ", "ผ้า syntrel",
+    "ผ้าซินเทรล", "ผ้าโพลีเอสเตอร์", "ผ้าโพลีเอสเตอร์กีฬา", "ผ้ากีฬายืดหยุ่นสูง", "โรงงานผลิตเสื้อกีฬา", "โรงงานตัดเย็บเสื้อกีฬา", "ร้านขายผ้าเสื้อกีฬา", "ร้านผ้าเสื้อกีฬา",
+    "ซื้อผ้าเสื้อกีฬา", "แหล่งซื้อผ้าเสื้อกีฬา", "sports shirt", "sports jersey fabric", "jersey fabric", "running shirt", "dry fit shirt", "เสื้อ dry fit",
+    "เสื้อกีฬาทีคัลเจอร์", "teeculture เสื้อกีฬา", "เสื้อกีฬาผลิตในไทย", "เสื้อกีฬา made in thailand", "เสื้อกีฬาไซส์ใหญ่", "เสื้อกีฬาบิ๊กไซส์", "เสื้อกีฬานักเรียน", "เสื้อพละ",
+    "เสื้อกีฬาสี", "เสื้อกีฬาโรงเรียน",
+  ],
+  "Fashion": [
+    "เสื้อโอเวอร์ไซส์-แฟชั่น", "เสื้อโอเวอร์ไซส์", "เสื้อโอเวอร์ไซซ์", "เสื้อไซส์ใหญ่", "เสื้อบิ๊กไซส์", "เสื้อแฟชั่น", "เสื้อยืดโอเวอร์ไซส์", "เสื้อยืดโอเวอร์ไซซ์",
+    "เสื้อยืดไซส์ใหญ่", "เสื้อยืดแฟชั่น", "เสื้อสตรีทแฟชั่น", "เสื้อวินเทจ", "เสื้อยืดวินเทจ", "เสื้อยืดทรงหลวม", "เสื้อทรงหลวม", "เสื้อผู้ชายทรงใหญ่",
+    "เสื้อผู้หญิงทรงใหญ่", "เสื้อยืดคอกลมโอเวอร์ไซส์", "เสื้อยืดแขนสั้นโอเวอร์ไซส์", "เสื้อยืดผ้าหนาโอเวอร์ไซส์", "เสื้อยืดผ้านุ่มโอเวอร์ไซส์", "เสื้อยืดยุคใหม่", "เสื้อผ้าเทรนด์", "เสื้อผ้าแฟชั่นวัยรุ่น",
+    "เสื้อสั่งทำแฟชั่น", "เสื้อสั่งตัดแฟชั่น", "เสื้อสกรีนแฟชั่น", "เสื้อสกรีนลายโอเวอร์ไซส์", "เสื้อทำแบรนด์", "เสื้อทำแบรนด์ตัวเอง", "เสื้อยืดทำแบรนด์", "เสื้อผ้าทำแบรนด์ตัวเอง",
+    "เสื้อยืดสตรีทแวร์", "streetwear", "streetwear fabric", "oversize t shirt", "oversized shirt", "oversized t-shirt fabric", "เสื้อผ้าฝ้าย", "เสื้อผ้าฝ้ายหนา",
+    "เสื้อผ้าคอตตอนพรีเมียม", "เสื้อ cotton prime", "ผ้า cotton prime", "ผ้าคอตตอนไพร์ม", "เสื้อผ้า interlock", "ผ้า interlock", "ผ้า cm40", "ผ้า cotton25",
+    "ผ้าคอตตอน 25", "เสื้อผ้าหนาพิเศษ", "เสื้อยืดผ้าหนาพิเศษ", "ผ้า baby french terry", "ผ้าเฟรนช์เทอร์รี่", "เสื้อสวมใส่หน้าหนาว", "เสื้อแขนยาวผ้าหนา", "เสื้อกันหนาว",
+    "เสื้อผ้า fashion house", "ผ้า fashion house", "เสื้อแฟชั่นเฮ้าส์", "ผ้าเสื้อโอเวอร์ไซส์", "ผ้าทำเสื้อโอเวอร์ไซส์", "ผ้าเสื้อโอเวอร์ไซส์เนื้อไหนดี", "เนื้อผ้าเสื้อโอเวอร์ไซส์", "ผ้าเสื้อโอเวอร์ไซส์มีกี่แบบ",
+    "โรงงานผลิตเสื้อโอเวอร์ไซส์", "โรงงานตัดเย็บเสื้อโอเวอร์ไซส์", "ร้านขายผ้าเสื้อโอเวอร์ไซส์", "ร้านผ้าเสื้อแฟชั่น", "ซื้อผ้าเสื้อโอเวอร์ไซส์", "แหล่งซื้อผ้าเสื้อโอเวอร์ไซส์", "เสื้อโอเวอร์ไซส์ทีคัลเจอร์", "teeculture โอเวอร์ไซส์",
+    "เสื้อโอเวอร์ไซส์ผลิตในไทย", "เสื้อโอเวอร์ไซส์ made in thailand", "เสื้อโอเวอร์ไซส์ราคาถูก", "เสื้อโอเวอร์ไซส์ราคาส่ง", "เสื้อโอเวอร์ไซส์ขายส่ง", "เสื้อโอเวอร์ไซส์คุณภาพดี", "เสื้อโอเวอร์ไซส์เนื้อดี", "เสื้อโอเวอร์ไซส์ผ้าดี",
+    "เสื้อยืดทำแบรนด์แฟชั่น",
+  ],
+};
+
 const GROUP_INFO = {
   "TC Lacoste":{ url:"https://www.teeculture.com/tc-lacoste/", catalog:"https://www.teeculture.com/media/TC-Lacoste.pdf",
     blurb:"ผ้าโปโลผสม Cotton/Polyester ราคาเข้าถึงได้ นุ่มสบาย คงรูปดี" },
@@ -703,7 +788,12 @@ const GROUP_INFO = {
     blurb:"ผ้าลาย Oxford ผสม Pima Cotton พรีเมียม สำหรับเสื้อเชิ้ต/โปโลระดับสูง" }
 };
 
-const CATEGORY_LABELS = { "Polo / Uniform":"เสื้อโปโล / ยูนิฟอร์ม" };
+const CATEGORY_LABELS = {
+  "Polo / Uniform":"เสื้อโปโล / ยูนิฟอร์ม",
+  "T-Shirt":"เสื้อยืด",
+  "Sport":"เสื้อกีฬา",
+  "Fashion":"เสื้อโอเวอร์ไซส์ / แฟชั่น"
+};
 
 let state = {
   category:"Polo / Uniform", benefits:[], color_group:null, budget_max:null,
@@ -788,10 +878,9 @@ function parseQuery(text){
     usage_context: [], best_seller_preferred:false, missing_information: []
   };
 
-  if(/(โปโล|ยูนิฟอร์ม|uniform|polo)/.test(t)) result.category = "Polo / Uniform";
-  else if(/(เสื้อยืด|t-shirt|tshirt)/.test(t)) result.category = "T-Shirt";
-  else if(/(กีฬา|sport)/.test(t)) result.category = "Sport";
-  else if(/(แฟชั่น|โอเวอร์ไซส์|fashion)/.test(t)) result.category = "Fashion";
+  const detectedCategory = ["Polo / Uniform","T-Shirt","Sport","Fashion"]
+    .find(cat => CATEGORY_KEYWORDS[cat].some(w => t.includes(w)));
+  if(detectedCategory) result.category = detectedCategory;
   else result.missing_information.push("category");
 
   const benefitKeywords = {
@@ -930,10 +1019,7 @@ function runSearch(){
     root.classList.remove("show");
     noRes.classList.add("show");
     summaryBox.classList.remove("show");
-    if(state.category!=="Polo / Uniform" && state.category!=="Unknown"){
-      document.getElementById("noResult").querySelector("p").textContent =
-        "หมวดนี้ยังไม่มีข้อมูลในฐานข้อมูล MVP (เริ่มต้นด้วยหมวดเสื้อโปโล/ยูนิฟอร์มก่อน) กรุณาลองเลือกหมวด เสื้อโปโล / ยูนิฟอร์ม";
-    }
+    renderNoResult(state.category);
     scrollToResults();
     return;
   }
@@ -954,6 +1040,40 @@ function runSearch(){
 
 function scrollToResults(){
   document.querySelector("section.results").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function renderNoResult(category){
+  const title = document.getElementById("noResultTitle");
+  const text = document.getElementById("noResultText");
+  const catalogList = document.getElementById("catalogOnlyList");
+  const suggestRow = document.getElementById("suggestRow");
+  const catalog = category ? CATALOG_ONLY[category] : null;
+
+  if(catalog && catalog.length){
+    const catLabel = CATEGORY_LABELS[category] || category;
+    title.textContent = `หมวด "${catLabel}" ยังไม่มีราคา/สเปกในระบบค้นหา`;
+    text.textContent = `ตอนนี้ระบบมีข้อมูลราคาและสเปกครบเฉพาะหมวดเสื้อโปโล/ยูนิฟอร์ม แต่ Tee Culture มีเทคโนโลยีผ้าต่อไปนี้สำหรับหมวด "${catLabel}" — คลิกเพื่อดูข้อมูลผ้าที่หน้าเว็บไซต์ต้นทาง`;
+    catalogList.style.display = "flex";
+    catalogList.innerHTML = catalog.map(f => `
+      <a class="icon-btn" href="${f.url}" target="_blank" rel="noopener" style="justify-content:space-between;">
+        <span>🧵 ${f.name}</span><span>↗</span>
+      </a>
+    `).join("");
+    suggestRow.style.display = "none";
+  } else if(category && category!=="Polo / Uniform" && category!=="Unknown"){
+    const catLabel = CATEGORY_LABELS[category] || category;
+    title.textContent = "ยังไม่พบผ้าที่ตรงครบทุกเงื่อนไข";
+    text.textContent = `หมวด "${catLabel}" ยังไม่มีข้อมูลในฐานข้อมูล MVP กรุณาลองเลือกหมวด เสื้อโปโล / ยูนิฟอร์ม`;
+    catalogList.style.display = "none";
+    catalogList.innerHTML = "";
+    suggestRow.style.display = "flex";
+  } else {
+    title.textContent = "ยังไม่พบผ้าที่ตรงครบทุกเงื่อนไข";
+    text.textContent = "ลองปรับเงื่อนไขการค้นหาด้านบน หรือเลือกข้อเสนอแนะด้านล่างเพื่อขยายผลการค้นหา";
+    catalogList.style.display = "none";
+    catalogList.innerHTML = "";
+    suggestRow.style.display = "flex";
+  }
 }
 
 function renderSummary(criteria, count){
@@ -1215,6 +1335,29 @@ function buildTree(){
         </div>
       </div>`;
     groupsWrap.appendChild(g);
+  });
+
+  Object.entries(CATALOG_ONLY).forEach(([category, items])=>{
+    const catLabel = CATEGORY_LABELS[category] || category;
+    const box = document.createElement("div");
+    box.className = "tree-cat";
+    box.innerHTML = `<div class="tree-cat-head" onclick="this.parentElement.classList.toggle('open')">
+        <h3>${catLabel} <span class="count">(${items.length} เทคโนโลยีผ้า · ยังไม่มีราคา/สเปกในระบบ)</span></h3>
+        <span class="chev">▾</span>
+      </div>
+      <div class="tree-groups">
+        <p class="group-blurb">Tee Culture มีผ้าหมวดนี้ แต่ระบบยังไม่ได้โหลดราคาและสเปกเข้ามา — คลิกเพื่อดูข้อมูลที่หน้าเว็บไซต์ต้นทาง</p>
+        <div class="fabric-list">
+          ${items.map(f=>`
+            <div class="fabric-row">
+              <div class="fname">🧵 ${f.name}</div>
+              <div class="row-actions">
+                <a class="icon-btn" href="${f.url}" target="_blank" rel="noopener">เว็บไซต์ ↗</a>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>`;
+    root.appendChild(box);
   });
 }
 

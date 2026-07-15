@@ -392,10 +392,10 @@
         <div id="tab-search" class="tab-panel">
           <textarea id="nlInput" placeholder="ตัวอย่าง: อยากได้ผ้าทำเสื้อโปโลพนักงาน ระบายอากาศดี ไม่ต้องรีด ใช้สีเข้ม งบไม่เกิน 300 บาทต่อกิโลกรัม"></textarea>
           <div class="search-row">
-            <button class="btn btn-primary" onclick="handleParse()">✨ ค้นหาผ้าที่เหมาะกับคุณ</button>
-            <button class="btn btn-ghost" onclick="clearAll()">เริ่มค้นหาใหม่</button>
+            <button class="btn btn-primary" onclick="handleParse(false)">⚙️ ปรับตัวกรองก่อนค้นหา</button>
+            <button class="btn btn-ghost" onclick="handleParse(true)">🔍 ค้นหาเลย</button>
           </div>
-          <div class="hint">ระบบจะช่วยแปลงข้อความของคุณเป็นตัวกรองด้านล่าง — คุณตรวจสอบและแก้ไขได้ก่อนค้นหาจริงเสมอ</div>
+          <div class="hint">"ปรับตัวกรองก่อนค้นหา" — ระบบแปลงข้อความเป็นตัวกรองด้านล่างให้ตรวจสอบ/แก้ไขก่อนกดค้นหาจริง · "ค้นหาเลย" — ให้ระบบแปลงข้อความแล้วค้นหาทันที · <a href="#" onclick="clearAll(); return false;" style="color:var(--rust);">เริ่มค้นหาใหม่</a></div>
         </div>
 
         <div id="tab-browse" class="browse-wrap">
@@ -1220,7 +1220,7 @@ function parseQuery(text){
   return result;
 }
 
-function handleParse(){
+function handleParse(runImmediately){
   const text = document.getElementById("nlInput").value.trim();
   if(!text){ runSearch(); return; }
   const parsed = parseQuery(text);
@@ -1246,8 +1246,11 @@ function handleParse(){
     missingBox.style.display = "none";
   }
 
-  document.querySelector("section.filters").scrollIntoView({behavior:"smooth", block:"start"});
-  runSearch();
+  if(runImmediately){
+    runSearch();
+  } else {
+    document.querySelector("section.filters").scrollIntoView({behavior:"smooth", block:"start"});
+  }
 }
 
 /* ---------------- matching + scoring ---------------- */

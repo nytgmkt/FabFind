@@ -1,15 +1,1228 @@
 <!DOCTYPE html>
 <html lang="th">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VendorMatch</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FabFind — ค้นหาผ้าที่เหมาะกับงานของคุณ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A3D;
+    --ink-soft:#42546b;
+    --canvas:#F0EAD9;
+    --canvas-2:#E4DBC4;
+    --card:#FBF8F1;
+    --card-line:#CDBE9F;
+    --rust:#B8451F;
+    --rust-dark:#8f350f;
+    --teal:#3F6E64;
+    --teal-soft:#e4ede9;
+    --gold:#C08A2E;
+    --gold-soft:#f6ecd3;
+    --danger:#8f351f;
+    --danger-soft:#f6e6de;
+    --white:#fff;
+    --radius-tag: 4px 14px 14px 4px;
+    --shadow: 0 1px 0 rgba(27,42,61,.05), 0 8px 20px -12px rgba(27,42,61,.35);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--canvas);
+    color:var(--ink);
+    font-family:'Sarabun',sans-serif;
+    font-size:16px;
+    line-height:1.55;
+  }
+  h1,h2,h3,h4,.display{
+    font-family:'Kanit',sans-serif;
+    color:var(--ink);
+    margin:0;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  a{ color:inherit; }
+  button{ font-family:inherit; cursor:pointer; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
+  ::selection{ background:var(--rust); color:#fff; }
+
+  /* subtle woven texture used as background accent */
+  .weave{
+    background-image:
+      repeating-linear-gradient(45deg, rgba(27,42,61,.05) 0 2px, transparent 2px 10px),
+      repeating-linear-gradient(-45deg, rgba(27,42,61,.05) 0 2px, transparent 2px 10px);
+  }
+
+  /* ---------- header ---------- */
+  header.site{
+    position:sticky; top:0; z-index:40;
+    background:var(--canvas); border-bottom:1px solid var(--card-line);
+  }
+  .site-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0;
+  }
+  .logo{ display:flex; align-items:center; gap:10px; }
+  .logo-mark{
+    width:34px; height:34px; border-radius:8px;
+    background:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    position:relative; flex:none;
+  }
+  .logo-mark svg{ width:20px; height:20px; }
+  .logo-text{ font-family:'Kanit'; font-weight:700; font-size:20px; letter-spacing:.2px; }
+  .logo-text span{ color:var(--rust); }
+  .logo-sub{ font-size:11px; color:var(--ink-soft); margin-top:-2px; letter-spacing:.4px; }
+  .site-cta{
+    display:flex; gap:10px; align-items:center;
+  }
+  .pill-link{
+    font-size:13px; padding:8px 14px; border-radius:999px;
+    border:1px solid var(--card-line); background:var(--card);
+    white-space:nowrap; text-decoration:none; color:var(--ink);
+  }
+  .pill-link:hover{ border-color:var(--ink); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:56px 0 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-tagline{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12.5px; font-weight:600; letter-spacing:.5px;
+    color:var(--rust); background:#fbe4d8; border:1px solid #eec3ac;
+    padding:5px 12px; border-radius:999px; margin-bottom:18px;
+  }
+  .hero h1{
+    font-size:clamp(30px,4.4vw,48px); font-weight:600; line-height:1.18;
+    max-width:14ch;
+  }
+  .hero p.lead{
+    max-width:56ch; color:var(--ink-soft); font-size:17px; margin-top:16px;
+  }
+
+  .search-card{
+    margin-top:32px; background:var(--card); border:1px solid var(--card-line);
+    border-radius:18px; box-shadow:var(--shadow); padding:22px;
+  }
+  .tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+  .tab-btn{
+    background:transparent; border:1px solid transparent; border-radius:10px;
+    padding:9px 14px; font-size:14.5px; font-weight:600; color:var(--ink-soft);
+  }
+  .tab-btn.active{ background:var(--ink); color:#fff; }
+  .tab-btn:not(.active):hover{ background:var(--canvas-2); }
+
+  textarea#nlInput{
+    width:100%; resize:vertical; min-height:78px; border-radius:12px;
+    border:1.5px solid var(--card-line); padding:14px 16px; font-family:'Sarabun';
+    font-size:15.5px; background:#fff; color:var(--ink);
+  }
+  textarea#nlInput:focus{ outline:none; border-color:var(--ink); }
+  .search-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+  .btn{
+    border:none; border-radius:10px; padding:12px 20px; font-weight:600; font-size:15px;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-primary{ background:var(--rust); color:#fff; }
+  .btn-primary:hover{ background:var(--rust-dark); }
+  .btn-ghost{ background:transparent; color:var(--ink); border:1.5px solid var(--card-line); }
+  .btn-ghost:hover{ border-color:var(--ink); }
+  .btn-sm{ padding:8px 13px; font-size:13.5px; border-radius:8px; }
+  .hint{ font-size:12.5px; color:var(--ink-soft); margin-top:10px; }
+
+  /* ---------- browse tree ---------- */
+  .browse-wrap{ display:none; }
+  .browse-wrap.active{ display:block; }
+  .crumb{
+    font-size:13px; color:var(--ink-soft); margin-bottom:14px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;
+  }
+  .crumb b{ color:var(--ink); }
+  .tree-cat{
+    border:1px solid var(--card-line); border-radius:14px; background:#fff; margin-bottom:12px; overflow:hidden;
+  }
+  .tree-cat-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; cursor:pointer; background:var(--canvas-2);
+  }
+  .tree-cat-head h3{ font-size:16px; font-weight:600; }
+  .tree-cat-head .count{ font-size:12.5px; color:var(--ink-soft); font-weight:400; }
+  .chev{ transition:transform .2s; }
+  .tree-cat.open .chev{ transform:rotate(180deg); }
+  .tree-groups{ display:none; padding:6px 10px 12px; }
+  .tree-cat.open .tree-groups{ display:block; }
+  .tree-group{ border-top:1px dashed var(--card-line); }
+  .tree-group:first-child{ border-top:none; }
+  .tree-group-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 8px; cursor:pointer;
+  }
+  .tree-group-head:hover{ color:var(--rust); }
+  .tree-group-head .name{ font-weight:600; font-size:14.5px; display:flex; align-items:center; gap:8px; }
+  .tree-group-body{ display:none; padding:0 8px 14px 24px; }
+  .tree-group.open .tree-group-body{ display:block; }
+  .tree-group.open .chev{ transform:rotate(180deg); }
+  .fabric-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:9px 0; border-bottom:1px solid #efe9da; font-size:14px;
+  }
+  .fabric-row:last-child{ border-bottom:none; }
+  .fabric-row .fname{ font-weight:500; }
+  .fabric-row .fspec{ font-size:12px; color:var(--ink-soft); }
+  .row-actions{ display:flex; gap:6px; flex:none; }
+  .icon-btn{
+    border:1px solid var(--card-line); background:#fff; border-radius:8px;
+    padding:6px 10px; font-size:12.5px; text-decoration:none; color:var(--ink); display:inline-flex; align-items:center; gap:5px;
+  }
+  .icon-btn:hover{ border-color:var(--rust); color:var(--rust); }
+  .icon-btn.catalog{ background:var(--teal-soft); border-color:#c7dcd5; color:var(--teal); }
+  .icon-btn.catalog:hover{ border-color:var(--teal); }
+  .group-blurb{ font-size:13px; color:var(--ink-soft); margin:0 0 8px; max-width:70ch; }
+  .group-catalog-all{ margin-top:6px; }
+
+  /* ---------- filters ---------- */
+  section.filters{ padding:26px 0 6px; }
+  .filters-panel{
+    background:var(--card); border:1px solid var(--card-line); border-radius:18px; padding:22px;
+  }
+  .filters-title{ display:flex; align-items:center; justify-content:between; gap:8px; margin-bottom:16px; }
+  .filters-title h2{ font-size:18px; font-weight:600; }
+  .filters-title .sub{ font-size:12.5px; color:var(--ink-soft); font-weight:400; margin-top:3px;}
+  .filter-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  @media(max-width:900px){ .filter-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:560px){ .filter-grid{ grid-template-columns:1fr; } }
+  .filter-block label.flabel{
+    display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft);
+    text-transform:uppercase; letter-spacing:.4px; margin-bottom:9px;
+  }
+  select.fselect{
+    width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid var(--card-line);
+    background:#fff; font-family:'Sarabun'; font-size:14.5px; color:var(--ink);
+  }
+  .chip-set{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chip{
+    border:1.5px solid var(--card-line); background:#fff; border-radius:999px;
+    padding:6px 12px; font-size:13px; color:var(--ink-soft); user-select:none;
+  }
+  .chip.selected{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .chip.color-chip{ display:inline-flex; align-items:center; gap:7px; }
+  .swatch-dot{ width:13px; height:13px; border-radius:50%; border:1px solid rgba(0,0,0,.15); flex:none; }
+  .budget-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  input.budget-input{
+    width:100px; padding:9px 10px; border-radius:9px; border:1.5px solid var(--card-line);
+    font-family:'JetBrains Mono'; font-size:14px;
+  }
+  .adv-toggle{
+    margin-top:16px; font-size:13px; color:var(--teal); font-weight:600; display:inline-flex; gap:6px; align-items:center; background:none; border:none; padding:0;
+  }
+  .adv-panel{ display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--card-line); }
+  .adv-panel.open{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  @media(max-width:560px){ .adv-panel.open{ grid-template-columns:1fr; } }
+  .best-seller-toggle{ display:flex; align-items:center; gap:9px; font-size:14px; }
+
+  .filters-footer{ display:flex; justify-content:space-between; align-items:center; margin-top:20px; flex-wrap:wrap; gap:10px; }
+
+  /* ---------- summary ---------- */
+  #summaryBox{
+    margin-top:24px; padding:16px 20px; border-radius:14px; background:var(--gold-soft);
+    border:1px solid #e6d2a0; font-size:14.5px; display:none; align-items:flex-start; gap:10px;
+  }
+  #summaryBox.show{ display:flex; }
+  #summaryBox .dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); margin-top:7px; flex:none; }
+
+  /* ---------- results ---------- */
+  section.results{ padding:26px 0 10px; }
+  .group-title{ display:flex; align-items:center; gap:10px; margin:34px 0 16px; }
+  .group-title h2{ font-size:19px; font-weight:600; }
+  .group-title .badge-count{
+    font-size:12px; font-family:'JetBrains Mono'; color:var(--ink-soft);
+    background:var(--canvas-2); padding:3px 9px; border-radius:999px;
+  }
+  .group-desc{ font-size:13px; color:var(--ink-soft); margin:-10px 0 16px; }
+  .cards-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  @media(max-width:980px){ .cards-grid{ grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:640px){ .cards-grid{ grid-template-columns:1fr;} }
+
+  /* swatch-tag card (signature element) */
+  .tag-card{
+    position:relative; background:var(--card); border:1px solid var(--card-line);
+    border-radius: var(--radius-tag); padding:22px 20px 18px 26px; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .tag-card::before{
+    /* punch hole */
+    content:""; position:absolute; left:10px; top:22px; width:9px; height:9px;
+    border-radius:50%; background:var(--canvas); border:1.4px solid var(--card-line);
+  }
+  .tag-card.top-pick{ border-color:var(--rust); box-shadow:0 1px 0 rgba(184,69,31,.08), 0 10px 26px -14px rgba(184,69,31,.55); }
+  .tag-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .tag-name{ font-family:'Kanit'; font-size:18px; font-weight:600; line-height:1.25; }
+  .tag-group{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .badges{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex:none; }
+  .badge{ font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; letter-spacing:.2px; white-space:nowrap; }
+  .badge.top{ background:var(--rust); color:#fff; }
+  .badge.bestseller{ background:var(--gold-soft); color:var(--gold); border:1px solid #e6d2a0; }
+  .badge.over{ background:var(--danger-soft); color:var(--danger); border:1px solid #e6c3b4; }
+
+  .why-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:5px; }
+  .why-list li{ font-size:13px; color:var(--ink-soft); display:flex; gap:7px; }
+  .why-list li::before{ content:"—"; color:var(--teal); flex:none; }
+
+  .price-block{
+    display:flex; align-items:baseline; gap:8px; padding:10px 0; border-top:1px dashed var(--card-line); border-bottom:1px dashed var(--card-line);
+  }
+  .price-num{ font-family:'JetBrains Mono'; font-size:26px; font-weight:700; color:var(--ink); }
+  .price-unit{ font-size:12.5px; color:var(--ink-soft); }
+  .price-color-tag{ margin-left:auto; font-size:11.5px; color:var(--ink-soft); background:var(--canvas-2); padding:3px 8px; border-radius:6px; }
+
+  .spec-mini{ display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; font-size:12.5px; }
+  .spec-mini div{ display:flex; justify-content:space-between; gap:6px; color:var(--ink-soft); }
+  .spec-mini b{ color:var(--ink); font-family:'JetBrains Mono'; font-weight:600; }
+
+  .tag-list{ display:flex; flex-wrap:wrap; gap:6px; }
+  .btag{ font-size:11.5px; background:var(--teal-soft); color:var(--teal); padding:4px 9px; border-radius:999px; font-weight:600; }
+
+  .tag-actions{ display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
+  .compare-check{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+
+  #noResult{ display:none; text-align:center; padding:40px 20px; background:var(--card); border:1px dashed var(--card-line); border-radius:16px; }
+  #noResult.show{ display:block; }
+  #noResult h3{ font-size:18px; margin-bottom:8px; }
+  #noResult p{ color:var(--ink-soft); font-size:14px; max-width:48ch; margin:0 auto 16px; }
+  .suggest-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+  #resultsRoot{ display:none; }
+  #resultsRoot.show{ display:block; }
+
+  /* ---------- disclaimer ---------- */
+  .disclaimer{
+    margin:44px 0 0; background:var(--danger-soft); border:1px solid #e6c3b4; border-radius:16px; padding:20px 22px;
+  }
+  .disclaimer h4{ font-size:14.5px; color:var(--danger); font-weight:700; margin-bottom:8px; display:flex; gap:8px; align-items:center; }
+  .disclaimer ul{ margin:8px 0 0; padding-left:18px; font-size:13px; color:#6d2c1c; }
+  .disclaimer ul li{ margin-bottom:4px; }
+  .disclaimer .note{ font-size:12.5px; color:#6d2c1c; margin-top:10px; }
+
+  /* ---------- contact cta ---------- */
+  .contact-cta{
+    margin:40px 0; background:var(--ink); color:#fff; border-radius:20px; padding:36px 32px;
+    display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
+  }
+  .contact-cta h3{ color:#fff; font-size:22px; font-weight:600; max-width:26ch; }
+  .contact-cta p{ color:#c8d0da; font-size:14px; margin-top:6px; max-width:44ch; }
+  .contact-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-light{ background:#fff; color:var(--ink); }
+  .btn-outline-light{ background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.35); }
+  .btn-outline-light:hover{ border-color:#fff; }
+
+  footer.site-footer{ padding:26px 0 50px; font-size:12.5px; color:var(--ink-soft); text-align:center; }
+  footer.site-footer a{ color:var(--teal); text-decoration:none; }
+
+  /* ---------- compare bar & modal ---------- */
+  .compare-bar{
+    position:fixed; left:50%; bottom:20px; transform:translateX(-50%) translateY(120%);
+    background:var(--ink); color:#fff; padding:12px 14px 12px 18px; border-radius:14px;
+    display:flex; align-items:center; gap:14px; box-shadow:0 14px 30px -10px rgba(0,0,0,.4);
+    transition:transform .25s ease; z-index:50; max-width:92vw;
+  }
+  .compare-bar.show{ transform:translateX(-50%) translateY(0); }
+  .compare-bar span{ font-size:13.5px; }
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(27,42,61,.55); display:none; align-items:center; justify-content:center; z-index:60; padding:20px;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal-box{
+    background:#fff; border-radius:18px; max-width:920px; width:100%; max-height:86vh; overflow:auto; padding:26px;
+  }
+  .modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .modal-close{ background:var(--canvas-2); border:none; border-radius:8px; width:32px; height:32px; font-size:16px; }
+  table.compare-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.compare-table th, table.compare-table td{ border:1px solid var(--card-line); padding:9px 10px; text-align:left; vertical-align:top; }
+  table.compare-table th{ background:var(--canvas-2); font-family:'Kanit'; }
+  table.compare-table td.mono-cell{ font-family:'JetBrains Mono'; }
+
+  .toast{
+    position:fixed; right:20px; bottom:20px; background:var(--ink); color:#fff; padding:12px 18px;
+    border-radius:10px; font-size:13.5px; transform:translateY(120%); transition:transform .25s ease; z-index:70;
+  }
+  .toast.show{ transform:translateY(0); }
+
+  /* fabric detail modal */
+  .detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media(max-width:640px){ .detail-grid{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap site-inner">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 8 L12 3 L21 8 L21 10 L17 8 L17 21 L7 21 L7 8 L3 10 Z" stroke="#F0EAD9" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">Fab<span>Find</span></div>
+        <div class="logo-sub">ผู้ช่วยค้นหาผ้าสำหรับเสื้อองค์กร</div>
+      </div>
+    </div>
+    <div class="site-cta">
+      <a class="pill-link" href="https://www.teeculture.com/fabric-technology/" target="_blank" rel="noopener">ข้อมูลผ้าต้นฉบับ ↗</a>
+      <a class="pill-link" href="https://www.teeculture.com/contact-us/" target="_blank" rel="noopener">ติดต่อทีมขาย</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-tagline">● MVP — เริ่มต้นด้วยข้อมูลหมวดเสื้อโปโล / ยูนิฟอร์ม</div>
+      <h1>กำลังมองหาผ้าสำหรับทำเสื้อแบบไหน?</h1>
+      <p class="lead">บอกประเภทเสื้อ คุณสมบัติที่ต้องการ สี และงบประมาณ แล้วระบบจะช่วยค้นหาผ้าที่เหมาะสมจากข้อมูลผ้าและใบราคาที่อนุมัติจริง — ชื่อผ้า สเปก และราคาทุกตัวเลขมาจากฐานข้อมูลเท่านั้น ไม่มีการสร้างขึ้นเอง</p>
+
+      <div class="search-card">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="search" onclick="switchTab('search')">🔍 ค้นหาด้วยความต้องการของคุณ</button>
+          <button class="tab-btn" data-tab="browse" onclick="switchTab('browse')">🗂️ เรียกดูตามหมวด &amp; เทคโนโลยีผ้า</button>
+        </div>
+
+        <div id="tab-search" class="tab-panel">
+          <textarea id="nlInput" placeholder="ตัวอย่าง: อยากได้ผ้าทำเสื้อโปโลพนักงาน ระบายอากาศดี ไม่ต้องรีด ใช้สีเข้ม งบไม่เกิน 300 บาทต่อกิโลกรัม"></textarea>
+          <div class="search-row">
+            <button class="btn btn-primary" onclick="handleParse()">✨ ค้นหาผ้าที่เหมาะกับคุณ</button>
+            <button class="btn btn-ghost" onclick="clearAll()">เริ่มค้นหาใหม่</button>
+          </div>
+          <div class="hint">ระบบจะช่วยแปลงข้อความของคุณเป็นตัวกรองด้านล่าง — คุณตรวจสอบและแก้ไขได้ก่อนค้นหาจริงเสมอ</div>
+        </div>
+
+        <div id="tab-browse" class="browse-wrap">
+          <div class="crumb">🧭 <b>เสื้อโปโล / ยูนิฟอร์ม</b> → เลือกกลุ่มเทคโนโลยีผ้า → ดูข้อมูลผ้า / โหลดแคตตาล็อก</div>
+          <div id="treeRoot"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="filters">
+    <div class="wrap">
+      <div class="filters-panel">
+        <div class="filters-title">
+          <div>
+            <h2>เงื่อนไขการค้นหา</h2>
+            <div class="sub">แก้ไขตัวกรองได้ทุกช่อง — ระบบค้นหาจากฐานข้อมูลจริงเท่านั้น</div>
+          </div>
+        </div>
+
+        <div class="filter-grid">
+          <div class="filter-block">
+            <label class="flabel">ประเภทเสื้อ</label>
+            <select id="fCategory" class="fselect">
+              <option value="Polo / Uniform">เสื้อโปโล / ยูนิฟอร์ม</option>
+              <option value="T-Shirt">เสื้อยืด (เร็ว ๆ นี้)</option>
+              <option value="Sport">เสื้อกีฬา (เร็ว ๆ นี้)</option>
+              <option value="Fashion">แฟชั่น / โอเวอร์ไซส์ (เร็ว ๆ นี้)</option>
+              <option value="Unknown">ยังไม่แน่ใจ</option>
+            </select>
+          </div>
+
+          <div class="filter-block">
+            <label class="flabel">กลุ่มสี</label>
+            <div class="chip-set" id="colorChips"></div>
+          </div>
+
+          <div class="filter-block">
+            <label class="flabel">งบประมาณต่อกิโลกรัม</label>
+            <div class="budget-row">
+              <input type="number" id="budgetInput" class="budget-input mono" placeholder="เช่น 300">
+              <span style="font-size:13px;color:var(--ink-soft)">บาท/กก.</span>
+            </div>
+            <div class="chip-set" id="budgetChips" style="margin-top:9px;"></div>
+          </div>
+
+          <div class="filter-block">
+            <label class="flabel">คุณสมบัติที่ต้องการ (เลือกได้หลายข้อ)</label>
+            <div class="chip-set" id="benefitChips"></div>
+          </div>
+        </div>
+
+        <button class="adv-toggle" onclick="toggleAdv()">⚙️ ตัวเลือกเพิ่มเติม <span id="advChev">▾</span></button>
+        <div class="adv-panel" id="advPanel">
+          <div class="filter-block">
+            <label class="flabel">Best Seller เท่านั้น</label>
+            <div class="best-seller-toggle">
+              <input type="checkbox" id="bestSellerOnly"> <span>แสดงเฉพาะผ้าขายดี</span>
+            </div>
+          </div>
+          <div class="filter-block">
+            <label class="flabel">GSM ขั้นต่ำ – สูงสุด</label>
+            <div class="budget-row">
+              <input type="number" id="gsmMin" class="budget-input mono" placeholder="ขั้นต่ำ">
+              <input type="number" id="gsmMax" class="budget-input mono" placeholder="สูงสุด">
+            </div>
+          </div>
+        </div>
+
+        <div class="filters-footer">
+          <div id="missingInfoNote" style="font-size:12.5px;color:var(--rust); display:none;"></div>
+          <button class="btn btn-primary" onclick="runSearch()">ยืนยันและค้นหา</button>
+        </div>
+      </div>
+
+      <div id="summaryBox"><div class="dot"></div><div id="summaryText"></div></div>
+    </div>
+  </section>
+
+  <section class="results">
+    <div class="wrap">
+      <div id="resultsRoot">
+        <div id="recommendedGroup"></div>
+        <div id="worthGroup"></div>
+        <div id="otherGroup"></div>
+      </div>
+
+      <div id="noResult">
+        <h3>ยังไม่พบผ้าที่ตรงครบทุกเงื่อนไข</h3>
+        <p>ลองปรับเงื่อนไขการค้นหาด้านบน หรือเลือกข้อเสนอแนะด้านล่างเพื่อขยายผลการค้นหา</p>
+        <div class="suggest-row">
+          <button class="btn btn-ghost btn-sm" onclick="suggestAction('budget')">เพิ่มงบประมาณ</button>
+          <button class="btn btn-ghost btn-sm" onclick="suggestAction('color')">เปลี่ยนกลุ่มสี</button>
+          <button class="btn btn-ghost btn-sm" onclick="suggestAction('benefits')">ลดจำนวนคุณสมบัติ</button>
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        <h4>⚠ ข้อควรทราบเรื่องราคา</h4>
+        <p style="font-size:13px;color:#6d2c1c;margin:0;">ราคานี้เป็นราคาเบื้องต้นจากใบราคาที่ได้รับอนุมัติ และยังไม่รวม VAT 7% กรุณาตรวจสอบราคา สต็อก สี และเงื่อนไขการขายกับเจ้าหน้าที่ก่อนสั่งซื้อ</p>
+        <ul>
+          <li>ราคายังไม่รวม VAT 7%</li>
+          <li>สั่งซื้อ 7 กิโลกรัมขึ้นไป (ไม่บวกค่าตัด)</li>
+          <li>หากสั่งซื้อผ้าน้อยกว่า 7 กิโลกรัม บวกค่าตัดเพิ่ม 20 บาทต่อกิโลกรัม</li>
+          <li>ไม่รับคืนทุกกรณี หากสินค้าถูกแปรสภาพไปแล้ว</li>
+          <li>กรณีตัดต่อสี รบกวนแจ้งก่อนสั่งซื้อ และทดสอบสีก่อนทุกครั้ง</li>
+        </ul>
+        <div class="note">ราคาอัพเดทเริ่มใช้วันที่ 20 พฤศจิกายน 2568 เป็นต้นไป · ข้อมูลราคาไม่ใช่การยืนยันสต็อกสินค้า</div>
+      </div>
+
+      <div class="contact-cta">
+        <div>
+          <h3>ยังตัดสินใจไม่ได้ หรืออยากได้ตัวอย่างผ้าจริง?</h3>
+          <p>ทีมขาย Tee Culture (ผู้ผลิตข้อมูลผ้าในฐานข้อมูลนี้) ยินดีให้คำปรึกษาและส่ง Hang Tag ตัวอย่างฟรี</p>
+        </div>
+        <div class="contact-actions">
+          <a class="btn btn-light btn-sm" href="https://www.teeculture.com/contact-us/" target="_blank" rel="noopener">ติดต่อสอบถามราคา</a>
+          <a class="btn btn-outline-light btn-sm" href="https://lin.ee/UF68Tq0" target="_blank" rel="noopener">แชทผ่าน LINE</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    FabFind MVP · ข้อมูลผ้าและราคาอ้างอิงจาก <a href="https://www.teeculture.com/fabric-technology/" target="_blank" rel="noopener">Tee Culture Fabric Technology</a> และใบราคาที่ได้รับอนุมัติ (มีผล 20 พ.ย. 2568) · เวอร์ชันนี้ครอบคลุมเฉพาะหมวดเสื้อโปโล/ยูนิฟอร์ม
+  </div>
+</footer>
+
+<div class="compare-bar" id="compareBar">
+  <span id="compareCount">เลือกไว้ 0 รายการ</span>
+  <button class="btn btn-light btn-sm" onclick="openCompare()">เปรียบเทียบ</button>
+  <button class="icon-btn" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff;" onclick="clearCompare()">ล้าง</button>
+</div>
+
+<div class="modal-overlay" id="compareModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 style="font-family:Kanit;font-size:18px;">เปรียบเทียบผ้า</h3>
+      <button class="modal-close" onclick="closeModal('compareModal')">✕</button>
+    </div>
+    <div id="compareTableWrap"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="detailTitle" style="font-family:Kanit;font-size:20px;"></h3>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">คัดลอกข้อมูลแล้ว</div>
+
+<script>
+/* =========================================================
+   FabFind — MVP prototype
+   Product data below is transcribed from:
+   - Tee Culture Fabric Technology pages (teeculture.com/fabric-technology)
+   - Approved Price List, effective 20 Nov 2025 (7% VAT excluded)
+   AI / rule-based logic only PARSES user text into filters and
+   SCORES existing records. It never invents fabric names,
+   properties, or prices.
+========================================================= */
+
+const BENEFIT_LABELS = {
+  breathable:"ระบายอากาศ", moisture_management:"จัดการความชื้น", quick_dry:"แห้งไว",
+  shape_retention:"คงรูป", easy_care:"ดูแลรักษาง่าย", no_iron:"ไม่ต้องรีด",
+  stretch:"ยืดหยุ่น", soft_touch:"สัมผัสนุ่ม", color_fastness:"สีคงทน",
+  antibacterial:"ยับยั้งแบคทีเรีย", odor_control:"ลดกลิ่น", recycled:"Sustainable / Recycled",
+  outdoor_use:"เหมาะกับงานกลางแจ้ง", movement:"เหมาะกับการเคลื่อนไหว", affordable:"ราคาประหยัด"
+};
+const COLOR_LABELS = { white:"สีขาว", light:"สีอ่อน", medium:"สีกลาง", dark:"สีเข้ม", top_dye:"ท็อปดาย" };
+const COLOR_SWATCH = { white:"#ffffff", light:"#D8CBB0", medium:"#8A7860", dark:"#2E2620", top_dye:"conic-gradient(#B8451F,#C08A2E,#3F6E64,#1B2A3D,#B8451F)" };
+const USAGE_LABELS = { outdoor:"งานกลางแจ้ง", uniform:"เสื้อพนักงาน/ยูนิฟอร์ม", organization:"งานองค์กร",
+  government:"หน่วยงานราชการ", sport:"กิจกรรม/กีฬา", formal:"ลุคสุภาพทางการ", event:"งานอีเวนต์" };
+
+const PRODUCTS = [
+  {
+    id:"POLO-TC-LACOSTE", category:"Polo / Uniform", fabric_name:"TC Lacoste",
+    technology_group:"TC Lacoste", composition:"C35:T65", width_inch:47, gsm:240, yard_per_kg:1.9,
+    price:{white:175, light:185, medium:215, dark:225, top_dye:null},
+    best_seller:false,
+    benefit_tags:["shape_retention","easy_care","no_iron","soft_touch","affordable"],
+    usage_tags:["uniform","organization"],
+    short_description:"ผ้าโปโลผสม Cotton 35% และ Polyester 65% นุ่มสบาย คงรูปดี ราคาเข้าถึงได้ เหมาะกับยูนิฟอร์มงบประหยัด",
+    website_url:"https://www.teeculture.com/tc-lacoste/",
+    catalog_url:"https://www.teeculture.com/media/TC-Lacoste.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-TC-JUTI-RECYCLED", category:"Polo / Uniform", fabric_name:"TC Juti Recycled",
+    technology_group:"TC Juti Recycled", composition:"C35:RCT65", width_inch:45, gsm:240, yard_per_kg:1.9,
+    price:{white:210, light:220, medium:250, dark:280, top_dye:null},
+    best_seller:false,
+    benefit_tags:["recycled","shape_retention","easy_care","no_iron","soft_touch","breathable"],
+    usage_tags:["uniform","organization","government"],
+    short_description:"ผ้ารีไซเคิลมาตรฐาน GRS ผสม Recycled Polyester และ Cotton เหมาะกับองค์กรที่เน้น ESG และงานประมูลที่มีเงื่อนไขความยั่งยืน",
+    website_url:"https://www.teeculture.com/tc-juti-recycled/",
+    catalog_url:"https://www.teeculture.com/media/TC%20Juti%20Recylcled.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-ENDURANCE-MESH", category:"Polo / Uniform", fabric_name:"Endurance Plus ลาย Mesh",
+    technology_group:"Endurance Plus", composition:"C22:T78", width_inch:64, gsm:210, yard_per_kg:3.1,
+    price:{white:210, light:230, medium:250, dark:270, top_dye:null},
+    best_seller:true,
+    benefit_tags:["color_fastness","no_iron","soft_touch","easy_care","shape_retention","breathable","quick_dry","outdoor_use"],
+    usage_tags:["uniform","outdoor","event"],
+    short_description:"ผ้าโปโลโครงสร้างตาข่าย ระบายอากาศดี เย็นสบาย แห้งไว เหมาะกับกิจกรรมกลางแจ้งและงานอีเวนต์",
+    website_url:"https://www.teeculture.com/endurance-plus-meshlacoste/",
+    catalog_url:"https://www.teeculture.com/media/Endurance%20Plus%20Mesh&Lacoste.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-ENDURANCE-LACOSTE", category:"Polo / Uniform", fabric_name:"Endurance Plus ลาย Lacoste",
+    technology_group:"Endurance Plus", composition:"C14:T86", width_inch:72, gsm:200, yard_per_kg:2.9,
+    price:{white:210, light:230, medium:250, dark:270, top_dye:null},
+    best_seller:false,
+    benefit_tags:["color_fastness","no_iron","soft_touch","easy_care","shape_retention"],
+    usage_tags:["uniform","office","formal"],
+    short_description:"ผ้าโปโลทอลายลาคอส สัมผัสเรียบหรู คงรูปดี ทรงสวย เหมาะกับยูนิฟอร์มองค์กรลุคสุภาพ",
+    website_url:"https://www.teeculture.com/endurance-plus-meshlacoste/",
+    catalog_url:"https://www.teeculture.com/media/Endurance%20Plus%20Mesh&Lacoste.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-ENDURANCE-AB", category:"Polo / Uniform", fabric_name:"Endurance (Antibacterial)",
+    technology_group:"Endurance", composition:"T100", width_inch:74, gsm:210, yard_per_kg:2.7,
+    price:{white:240, light:250, medium:270, dark:290, top_dye:null},
+    best_seller:true,
+    benefit_tags:["color_fastness","shape_retention","easy_care","antibacterial","odor_control","quick_dry"],
+    usage_tags:["uniform","government","organization"],
+    short_description:"ผ้าโพลีเอสเตอร์ 100% สัมผัสนุ่มคล้ายคอตตอน มีคุณสมบัติ Anti-Bacterial ลดกลิ่นอับ สีสดคงทนตลอดปี",
+    website_url:"https://www.teeculture.com/endurance/",
+    catalog_url:"https://www.teeculture.com/media/Endurance.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-DRYTECH-201", category:"Polo / Uniform", fabric_name:"Dry-Tech 201",
+    technology_group:"Dry-Tech", composition:"C57:T43", width_inch:60, gsm:180, yard_per_kg:3.8,
+    price:{white:315, light:325, medium:335, dark:345, top_dye:null},
+    best_seller:true,
+    benefit_tags:["breathable","easy_care","no_iron","moisture_management","shape_retention","quick_dry","outdoor_use"],
+    usage_tags:["uniform","outdoor","sport"],
+    short_description:"ผ้าทอสองชั้น ระบายอากาศและซึมซับเหงื่อได้ดี เหมาะกับงานกลางแจ้งและกิจกรรมที่ต้องเคลื่อนไหวมาก",
+    website_url:"https://www.teeculture.com/dry-tech/",
+    catalog_url:"https://www.teeculture.com/media/Drytech.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-DRYTECH-202", category:"Polo / Uniform", fabric_name:"Dry-Tech 202 (ขาว, ดำ)",
+    technology_group:"Dry-Tech", composition:"C63:T37", width_inch:60, gsm:220, yard_per_kg:3.1,
+    price:{white:305, light:315, medium:325, dark:335, top_dye:null},
+    best_seller:true,
+    benefit_tags:["breathable","easy_care","no_iron","moisture_management","shape_retention","quick_dry","outdoor_use"],
+    usage_tags:["uniform","outdoor","sport"],
+    short_description:"ผ้ากลุ่ม Dry-Tech น้ำหนักผ้าสูงกว่า 201 คงรูปหนา เหมาะกับยูนิฟอร์มที่ต้องการความหนาและ Performance สูงขึ้น (มีเฉพาะสีขาว, ดำ)",
+    website_url:"https://www.teeculture.com/dry-tech/",
+    catalog_url:"https://www.teeculture.com/media/Drytech.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-DRYTECH-401", category:"Polo / Uniform", fabric_name:"Dry-Tech 401",
+    technology_group:"Dry-Tech", composition:"C63:T37", width_inch:70, gsm:180, yard_per_kg:3.3,
+    price:{white:315, light:325, medium:335, dark:345, top_dye:325},
+    best_seller:true,
+    benefit_tags:["breathable","easy_care","no_iron","moisture_management","shape_retention","quick_dry","outdoor_use"],
+    usage_tags:["uniform","outdoor","sport"],
+    short_description:"ผ้ากลุ่ม Dry-Tech ที่รองรับตัวเลือกท็อปดาย เหมาะกับงานที่ต้องพิมพ์ลายหรือกำหนดโทนสีพิเศษ",
+    website_url:"https://www.teeculture.com/dry-tech/",
+    catalog_url:"https://www.teeculture.com/media/Drytech.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  },
+  {
+    id:"POLO-ELITECH-101", category:"Polo / Uniform", fabric_name:"Elitech 101",
+    technology_group:"Elitech 101", composition:"PC51:T49", width_inch:70, gsm:140, yard_per_kg:4.2,
+    price:{white:390, light:390, medium:390, dark:390, top_dye:null},
+    best_seller:false,
+    benefit_tags:["easy_care","no_iron","soft_touch","breathable","shape_retention"],
+    usage_tags:["uniform","formal"],
+    short_description:"ผ้าลาย Oxford ทอพิเศษแบบ Single Jacquard ผสม Pima Cotton เนื้อเนียนนุ่ม พรีเมียม เหมาะกับเสื้อเชิ้ตและโปโลระดับพรีเมียม",
+    website_url:"https://www.teeculture.com/elitech/",
+    catalog_url:"https://www.teeculture.com/media/Elitech101.pdf",
+    price_effective_date:"2025-11-20", source_note:"Website + Approved Price List"
+  }
+];
+
+const GROUP_INFO = {
+  "TC Lacoste":{ url:"https://www.teeculture.com/tc-lacoste/", catalog:"https://www.teeculture.com/media/TC-Lacoste.pdf",
+    blurb:"ผ้าโปโลผสม Cotton/Polyester ราคาเข้าถึงได้ นุ่มสบาย คงรูปดี" },
+  "TC Juti Recycled":{ url:"https://www.teeculture.com/tc-juti-recycled/", catalog:"https://www.teeculture.com/media/TC%20Juti%20Recylcled.pdf",
+    blurb:"ผ้ารีไซเคิลมาตรฐาน GRS เพื่อยูนิฟอร์มองค์กรที่เน้นความยั่งยืน" },
+  "Endurance Plus":{ url:"https://www.teeculture.com/endurance-plus-meshlacoste/", catalog:"https://www.teeculture.com/media/Endurance%20Plus%20Mesh&Lacoste.pdf",
+    blurb:"สีไม่ซีด ไม่ต้องรีด มี 2 ลาย: Mesh ระบายอากาศ และ Lacoste ทรงสุภาพ" },
+  "Endurance":{ url:"https://www.teeculture.com/endurance/", catalog:"https://www.teeculture.com/media/Endurance.pdf",
+    blurb:"โพลีเอสเตอร์ 100% สัมผัสนุ่ม มีคุณสมบัติ Anti-Bacterial ลดกลิ่นอับ" },
+  "Dry-Tech":{ url:"https://www.teeculture.com/dry-tech/", catalog:"https://www.teeculture.com/media/Drytech.pdf",
+    blurb:"เทคโนโลยีทอสองชั้น ระบายอากาศ แห้งไว มี 3 รุ่น: 201 / 202 / 401" },
+  "Elitech 101":{ url:"https://www.teeculture.com/elitech/", catalog:"https://www.teeculture.com/media/Elitech101.pdf",
+    blurb:"ผ้าลาย Oxford ผสม Pima Cotton พรีเมียม สำหรับเสื้อเชิ้ต/โปโลระดับสูง" }
+};
+
+const CATEGORY_LABELS = { "Polo / Uniform":"เสื้อโปโล / ยูนิฟอร์ม" };
+
+let state = {
+  category:"Polo / Uniform", benefits:[], color_group:null, budget_max:null,
+  usage_context:[], best_seller_preferred:false, gsm_min:null, gsm_max:null,
+  missing_information:[]
+};
+let compareList = [];
+
+/* ---------------- init UI ---------------- */
+function initChips(){
+  const colorWrap = document.getElementById("colorChips");
+  Object.keys(COLOR_LABELS).forEach(key=>{
+    const c = document.createElement("button");
+    c.className = "chip color-chip"; c.type="button"; c.dataset.value=key;
+    c.innerHTML = `<span class="swatch-dot" style="background:${COLOR_SWATCH[key]}"></span>${COLOR_LABELS[key]}`;
+    c.onclick = ()=>{ state.color_group = state.color_group===key? null : key; renderChipStates(); };
+    colorWrap.appendChild(c);
+  });
+
+  const budgetWrap = document.getElementById("budgetChips");
+  const presets = [["≤250",250],["251–300",300],["301–350",350],["ไม่กำหนด",null]];
+  presets.forEach(([label,val])=>{
+    const c = document.createElement("button");
+    c.className="chip"; c.type="button"; c.textContent=label; c.dataset.val = val===null? "null": val;
+    c.onclick=()=>{ state.budget_max = val; document.getElementById("budgetInput").value = val ?? ""; renderChipStates(); };
+    budgetWrap.appendChild(c);
+  });
+
+  const benefitWrap = document.getElementById("benefitChips");
+  Object.keys(BENEFIT_LABELS).forEach(key=>{
+    const c = document.createElement("button");
+    c.className="chip"; c.type="button"; c.textContent=BENEFIT_LABELS[key]; c.dataset.value=key;
+    c.onclick=()=>{
+      const i = state.benefits.indexOf(key);
+      if(i>-1) state.benefits.splice(i,1); else state.benefits.push(key);
+      renderChipStates();
+    };
+    benefitWrap.appendChild(c);
+  });
+
+  document.getElementById("fCategory").addEventListener("change", e=>{ state.category = e.target.value; });
+  document.getElementById("budgetInput").addEventListener("input", e=>{
+    state.budget_max = e.target.value===""? null : Number(e.target.value);
+    renderChipStates();
+  });
+  document.getElementById("bestSellerOnly").addEventListener("change", e=>{ state.best_seller_preferred = e.target.checked; });
+  document.getElementById("gsmMin").addEventListener("input", e=>{ state.gsm_min = e.target.value===""?null:Number(e.target.value); });
+  document.getElementById("gsmMax").addEventListener("input", e=>{ state.gsm_max = e.target.value===""?null:Number(e.target.value); });
+}
+
+function renderChipStates(){
+  document.querySelectorAll("#colorChips .chip").forEach(c=>{
+    c.classList.toggle("selected", c.dataset.value === state.color_group);
+  });
+  document.querySelectorAll("#benefitChips .chip").forEach(c=>{
+    c.classList.toggle("selected", state.benefits.includes(c.dataset.value));
+  });
+  document.querySelectorAll("#budgetChips .chip").forEach(c=>{
+    const v = c.dataset.val === "null" ? null : Number(c.dataset.val);
+    c.classList.toggle("selected", v === state.budget_max);
+  });
+}
+
+function toggleAdv(){
+  const p = document.getElementById("advPanel");
+  p.classList.toggle("open");
+  document.getElementById("advChev").textContent = p.classList.contains("open") ? "▴" : "▾";
+}
+
+function switchTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
+  document.getElementById("tab-search").style.display = tab==="search" ? "block" : "none";
+  document.getElementById("tab-browse").classList.toggle("active", tab==="browse");
+}
+
+/* ---------------- rule-based NL parsing ---------------- */
+function parseQuery(text){
+  const t = text.toLowerCase();
+  const result = {
+    category: state.category || "Unknown",
+    benefits: [], color_group: null, budget_max: null,
+    usage_context: [], best_seller_preferred:false, missing_information: []
+  };
+
+  if(/(โปโล|ยูนิฟอร์ม|uniform|polo)/.test(t)) result.category = "Polo / Uniform";
+  else if(/(เสื้อยืด|t-shirt|tshirt)/.test(t)) result.category = "T-Shirt";
+  else if(/(กีฬา|sport)/.test(t)) result.category = "Sport";
+  else if(/(แฟชั่น|โอเวอร์ไซส์|fashion)/.test(t)) result.category = "Fashion";
+  else result.missing_information.push("category");
+
+  const benefitKeywords = {
+    breathable:["ระบายอากาศ","โปร่งสบาย"],
+    moisture_management:["จัดการความชื้น","ซึมซับเหงื่อ","เหงื่อ"],
+    quick_dry:["แห้งไว","แห้งเร็ว"],
+    shape_retention:["คงรูป","ไม่เสียทรง","ทรงสวย"],
+    easy_care:["ดูแลรักษาง่าย","ดูแลง่าย"],
+    no_iron:["ไม่ต้องรีด","ไม่ยับ","ยับยาก"],
+    stretch:["ยืดหยุ่น","ยืด"],
+    soft_touch:["นุ่ม","สัมผัสนุ่ม"],
+    color_fastness:["สีไม่ซีด","สีคงทน","สีสด"],
+    antibacterial:["แบคทีเรีย","ยับยั้งเชื้อ"],
+    odor_control:["ลดกลิ่น","กลิ่นอับ","กลิ่นเหม็น"],
+    recycled:["รีไซเคิล","recycled","sustainable","ยั่งยืน","esg"],
+    outdoor_use:["กลางแจ้ง","ออกแดด","แดดจัด"],
+    movement:["เคลื่อนไหว","ออกกำลังกาย","คล่องตัว"],
+    affordable:["ราคาประหยัด","งบน้อย","ราคาถูก"]
+  };
+  Object.entries(benefitKeywords).forEach(([key,words])=>{
+    if(words.some(w=>t.includes(w))) result.benefits.push(key);
+  });
+  if(result.benefits.length===0) result.missing_information.push("benefits");
+
+  if(t.includes("สีเข้ม")) result.color_group="dark";
+  else if(t.includes("สีกลาง")) result.color_group="medium";
+  else if(t.includes("สีอ่อน")) result.color_group="light";
+  else if(t.includes("สีขาว")) result.color_group="white";
+  else if(t.includes("ท็อปดาย")||t.includes("ทอปดาย")) result.color_group="top_dye";
+  else result.missing_information.push("color_group");
+
+  const budgetMatch = t.match(/(\d{2,4})\s*(บาท|บ\.)/);
+  if(budgetMatch) result.budget_max = Number(budgetMatch[1]);
+  else if(/ไม่จำกัดงบ|ไม่กำหนดงบ/.test(t)) result.budget_max = null;
+  else result.missing_information.push("budget");
+
+  const usageKeywords = {
+    outdoor:["กลางแจ้ง","ออกแดด"], uniform:["พนักงาน","ยูนิฟอร์ม"], organization:["องค์กร","บริษัท"],
+    government:["ราชการ","หน่วยงานรัฐ"], sport:["กีฬา","ออกกำลังกาย"], formal:["สุภาพ","ทางการ"], event:["อีเวนต์","งานอีเวนต์"]
+  };
+  Object.entries(usageKeywords).forEach(([key,words])=>{
+    if(words.some(w=>t.includes(w))) result.usage_context.push(key);
+  });
+
+  if(/best ?seller|ขายดี|ยอดนิยม/.test(t)) result.best_seller_preferred = true;
+
+  return result;
+}
+
+function handleParse(){
+  const text = document.getElementById("nlInput").value.trim();
+  if(!text){ runSearch(); return; }
+  const parsed = parseQuery(text);
+  state.category = parsed.category === "Unknown" ? state.category : parsed.category;
+  state.benefits = parsed.benefits;
+  state.color_group = parsed.color_group;
+  state.budget_max = parsed.budget_max;
+  state.usage_context = parsed.usage_context;
+  state.best_seller_preferred = parsed.best_seller_preferred;
+  state.missing_information = parsed.missing_information;
+
+  document.getElementById("fCategory").value = ["Polo / Uniform","T-Shirt","Sport","Fashion"].includes(state.category) ? state.category : "Unknown";
+  document.getElementById("budgetInput").value = state.budget_max ?? "";
+  document.getElementById("bestSellerOnly").checked = state.best_seller_preferred;
+  renderChipStates();
+
+  const missingBox = document.getElementById("missingInfoNote");
+  if(state.missing_information.length){
+    const labelMap = {category:"ประเภทเสื้อ", benefits:"คุณสมบัติ", color_group:"กลุ่มสี", budget:"งบประมาณ"};
+    missingBox.style.display = "block";
+    missingBox.textContent = "ระบบตรวจไม่พบข้อมูล: " + state.missing_information.map(k=>labelMap[k]||k).join(", ") + " — กรุณาเลือกเพิ่มเติมด้านบนก่อนค้นหา (ไม่บังคับ)";
+  } else {
+    missingBox.style.display = "none";
+  }
+
+  document.querySelector("section.filters").scrollIntoView({behavior:"smooth", block:"start"});
+  runSearch();
+}
+
+/* ---------------- matching + scoring ---------------- */
+function colorKeyForPrice(colorGroup){ return colorGroup || null; }
+
+function evaluateProduct(p, criteria){
+  const colorKey = colorKeyForPrice(criteria.color_group);
+  const hasPrice = colorKey ? (p.price[colorKey]!==null && p.price[colorKey]!==undefined) : true;
+  const price = colorKey ? p.price[colorKey] : null;
+
+  const benefitMatches = criteria.benefits.filter(b=>p.benefit_tags.includes(b));
+  const usageMatches = (criteria.usage_context||[]).filter(u=>p.usage_tags.includes(u));
+
+  const withinBudget = criteria.budget_max==null ? true : (hasPrice && price!=null && price<=criteria.budget_max);
+  let overPct = 0;
+  if(hasPrice && criteria.budget_max!=null && price!=null && price>criteria.budget_max){
+    overPct = ((price-criteria.budget_max)/criteria.budget_max)*100;
+  }
+
+  let score = 5; // category already filtered
+  score += benefitMatches.length*2;
+  score += usageMatches.length*2;
+  score += withinBudget ? 3 : 0;
+  score += p.best_seller ? 1 : 0;
+  if(criteria.color_group && !hasPrice) score -= 3;
+  if(hasPrice && !withinBudget && overPct>0 && overPct<=10) score -= 1;
+  if(hasPrice && !withinBudget && overPct>10) score -= 3;
+
+  return { product:p, colorKey, hasPrice, price, benefitMatches, usageMatches, withinBudget, overPct, score };
+}
+
+function classify(evals, criteria){
+  const recommended=[], worth=[], other=[];
+  evals.forEach(e=>{
+    const benefitRatio = criteria.benefits.length ? e.benefitMatches.length/criteria.benefits.length : 1;
+    if(e.hasPrice && e.withinBudget && (criteria.benefits.length===0 || benefitRatio>=0.6)){
+      recommended.push(e);
+    } else if(e.benefitMatches.length>0 || (e.hasPrice && !e.withinBudget && e.overPct<=15)){
+      worth.push(e);
+    } else {
+      other.push(e);
+    }
+  });
+  const bySc = (a,b)=>b.score-a.score;
+  return { recommended: recommended.sort(bySc).slice(0,3), worth: worth.sort(bySc).slice(0,3), other: other.sort(bySc).slice(0,3) };
+}
+
+function runSearch(){
+  let pool = PRODUCTS.filter(p => state.category==="Unknown" ? true : p.category===state.category);
+  if(state.best_seller_preferred) pool = pool.filter(p=>p.best_seller);
+  if(state.gsm_min!=null) pool = pool.filter(p=>p.gsm>=state.gsm_min);
+  if(state.gsm_max!=null) pool = pool.filter(p=>p.gsm<=state.gsm_max);
+
+  const root = document.getElementById("resultsRoot");
+  const noRes = document.getElementById("noResult");
+  const summaryBox = document.getElementById("summaryBox");
+
+  if(pool.length===0){
+    root.classList.remove("show");
+    noRes.classList.add("show");
+    summaryBox.classList.remove("show");
+    if(state.category!=="Polo / Uniform" && state.category!=="Unknown"){
+      document.getElementById("noResult").querySelector("p").textContent =
+        "หมวดนี้ยังไม่มีข้อมูลในฐานข้อมูล MVP (เริ่มต้นด้วยหมวดเสื้อโปโล/ยูนิฟอร์มก่อน) กรุณาลองเลือกหมวด เสื้อโปโล / ยูนิฟอร์ม";
+    }
+    scrollToResults();
+    return;
+  }
+
+  const evals = pool.map(p=>evaluateProduct(p, state));
+  const { recommended, worth, other } = classify(evals, state);
+
+  renderSummary(state, recommended.length);
+  renderGroup("recommendedGroup", "แนะนำมากที่สุด", recommended, "top", "ตรงกับหมวดสินค้า คุณสมบัติ และอยู่ในงบประมาณ");
+  renderGroup("worthGroup", "ตัวเลือกที่น่าพิจารณา", worth, "worth", "ตรงกับคุณสมบัติบางส่วน หรือเกินงบเล็กน้อย");
+  renderGroup("otherGroup", "ตัวเลือกอื่นในหมวดเดียวกัน", other, "other", "อยู่ในหมวดเดียวกัน ราคาเหมาะสม แต่คุณสมบัติตรงน้อยกว่า");
+
+  const anyResult = recommended.length+worth.length+other.length>0;
+  root.classList.toggle("show", anyResult);
+  noRes.classList.toggle("show", !anyResult);
+  scrollToResults();
+}
+
+function scrollToResults(){
+  document.querySelector("section.results").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function renderSummary(criteria, count){
+  const box = document.getElementById("summaryBox");
+  const text = document.getElementById("summaryText");
+  const catLabel = CATEGORY_LABELS[criteria.category] || "ทุกหมวด";
+  const benLabel = criteria.benefits.length ? criteria.benefits.map(b=>BENEFIT_LABELS[b]).join(" ") : "ไม่ระบุคุณสมบัติเฉพาะ";
+  const colorLabel = criteria.color_group ? COLOR_LABELS[criteria.color_group] : "ยังไม่ระบุกลุ่มสี";
+  const budgetLabel = criteria.budget_max!=null ? `ในงบไม่เกิน ${criteria.budget_max} บาทต่อกิโลกรัม` : "ไม่จำกัดงบประมาณ";
+  text.textContent = `เราพบผ้า ${count} รายการแนะนำสำหรับ${catLabel} ที่เน้น${benLabel} สำหรับ${colorLabel} ${budgetLabel}`;
+  box.classList.add("show");
+}
+
+function renderGroup(rootId, title, items, kind, desc){
+  const root = document.getElementById(rootId);
+  root.innerHTML = "";
+  if(items.length===0) return;
+  const head = document.createElement("div");
+  head.className="group-title";
+  head.innerHTML = `<h2>${title}</h2><span class="badge-count">${items.length} รายการ</span>`;
+  root.appendChild(head);
+  const descEl = document.createElement("div");
+  descEl.className="group-desc"; descEl.textContent = desc;
+  root.appendChild(descEl);
+  const grid = document.createElement("div");
+  grid.className="cards-grid";
+  items.forEach((e,idx)=> grid.appendChild(buildCard(e, kind, idx)));
+  root.appendChild(grid);
+}
+
+function buildCard(e, kind, idx){
+  const p = e.product;
+  const card = document.createElement("div");
+  card.className = "tag-card" + (kind==="top" && idx===0 ? " top-pick" : "");
+
+  const colorLabel = state.color_group ? COLOR_LABELS[state.color_group] : null;
+  const priceDisplay = e.hasPrice && e.price!=null ? `${e.price}` : "สอบถามราคา";
+
+  let badgesHtml = "";
+  if(kind==="top" && idx===0) badgesHtml += `<span class="badge top">แนะนำมากที่สุด</span>`;
+  if(p.best_seller) badgesHtml += `<span class="badge bestseller">Best Seller</span>`;
+  if(state.budget_max!=null && e.hasPrice && !e.withinBudget) badgesHtml += `<span class="badge over">เกินงบ ${Math.round(e.price-state.budget_max)} บาท</span>`;
+
+  const whyItems = [];
+  whyItems.push(`อยู่ในหมวด ${CATEGORY_LABELS[p.category]||p.category}`);
+  if(e.benefitMatches.length) whyItems.push(`ตรงกับคุณสมบัติ: ${e.benefitMatches.map(b=>BENEFIT_LABELS[b]).join(", ")}`);
+  if(e.usageMatches.length) whyItems.push(`เหมาะกับ: ${e.usageMatches.map(u=>USAGE_LABELS[u]||u).join(", ")}`);
+  if(state.color_group){
+    whyItems.push(e.hasPrice
+      ? (e.withinBudget ? `ราคา${colorLabel}อยู่ในงบประมาณ` : `ราคา${colorLabel}เกินงบที่ตั้งไว้`)
+      : `กรุณาสอบถามราคาสำหรับกลุ่มสีนี้เพิ่มเติม`);
+  }
+  if(p.best_seller) whyItems.push("เป็นสินค้า Best Seller");
+
+  const specHtml = `
+    <div class="spec-mini">
+      <div>Composition<b>${p.composition}</b></div>
+      <div>หน้าผ้า<b>${p.width_inch}"</b></div>
+      <div>GSM<b>${p.gsm}</b></div>
+      <div>หลา/กก.<b>${p.yard_per_kg}</b></div>
+    </div>`;
+
+  const tagsHtml = p.benefit_tags.slice(0,5).map(b=>`<span class="btag">${BENEFIT_LABELS[b]}</span>`).join("");
+
+  card.innerHTML = `
+    <div class="tag-head">
+      <div>
+        <div class="tag-name">${p.fabric_name}</div>
+        <div class="tag-group">${p.technology_group} · ${CATEGORY_LABELS[p.category]||p.category}</div>
+      </div>
+      <div class="badges">${badgesHtml}</div>
+    </div>
+    <ul class="why-list">${whyItems.map(w=>`<li>${w}</li>`).join("")}</ul>
+    <div class="price-block">
+      <div class="price-num">${priceDisplay}</div>
+      <div class="price-unit">${e.hasPrice? "บาท/กก.":""}</div>
+      ${colorLabel? `<div class="price-color-tag">${colorLabel}</div>`:""}
+    </div>
+    ${specHtml}
+    <div class="tag-list">${tagsHtml}</div>
+    <div class="tag-actions">
+      <a class="icon-btn" href="${p.website_url}" target="_blank" rel="noopener">📄 ดูรายละเอียดผ้า</a>
+      <a class="icon-btn catalog" href="${p.catalog_url}" target="_blank" rel="noopener">⬇ โหลดแคตตาล็อก</a>
+      <button class="icon-btn" onclick="copyProductInfo('${p.id}')">⧉ คัดลอกข้อมูล</button>
+      <button class="icon-btn" onclick="openDetail('${p.id}')">🔎 ดูสเปกเต็ม</button>
+    </div>
+    <label class="compare-check"><input type="checkbox" data-id="${p.id}" onchange="toggleCompare('${p.id}', this.checked)" ${compareList.includes(p.id)?"checked":""}> เพิ่มในรายการเปรียบเทียบ</label>
+  `;
+  return card;
+}
+
+/* ---------------- copy / compare / detail ---------------- */
+function copyProductInfo(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  const colorLabel = state.color_group ? COLOR_LABELS[state.color_group] : "ทุกกลุ่มสี";
+  const price = state.color_group ? (p.price[state.color_group] ?? "สอบถามราคา") : "ดูราคาตามกลุ่มสีบนเว็บไซต์";
+  const text = `${p.fabric_name} (${p.technology_group})
+Composition: ${p.composition} | หน้าผ้า ${p.width_inch}" | GSM ${p.gsm} | ${p.yard_per_kg} หลา/กก.
+ราคา ${colorLabel}: ${price} บาท/กก. (ไม่รวม VAT 7%, มีผล 20 พ.ย. 2568)
+รายละเอียด: ${p.website_url}
+แคตตาล็อก: ${p.catalog_url}`;
+  navigator.clipboard?.writeText(text).then(()=>showToast("คัดลอกข้อมูลผ้าแล้ว"));
+}
+
+function toggleCompare(id, checked){
+  if(checked){ if(compareList.length>=3){ showToast("เปรียบเทียบได้สูงสุด 3 รายการ"); return; } compareList.push(id); }
+  else compareList = compareList.filter(x=>x!==id);
+  document.querySelectorAll(`input[data-id="${id}"]`).forEach(cb=>cb.checked=checked);
+  const bar = document.getElementById("compareBar");
+  document.getElementById("compareCount").textContent = `เลือกไว้ ${compareList.length} รายการ`;
+  bar.classList.toggle("show", compareList.length>=2);
+}
+function clearCompare(){
+  compareList = [];
+  document.querySelectorAll('input[type=checkbox][data-id]').forEach(cb=>cb.checked=false);
+  document.getElementById("compareBar").classList.remove("show");
+}
+function openCompare(){
+  const items = PRODUCTS.filter(p=>compareList.includes(p.id));
+  const colorKey = state.color_group;
+  let rows = [
+    ["Technology Group", ...items.map(p=>p.technology_group)],
+    ["Composition", ...items.map(p=>p.composition)],
+    ["หน้าผ้า", ...items.map(p=>p.width_inch+'"')],
+    ["GSM", ...items.map(p=>p.gsm)],
+    ["หลา/กก.", ...items.map(p=>p.yard_per_kg)],
+    ["ราคา (สีขาว)", ...items.map(p=>p.price.white ?? "-")],
+    ["ราคา (สีอ่อน)", ...items.map(p=>p.price.light ?? "-")],
+    ["ราคา (สีกลาง)", ...items.map(p=>p.price.medium ?? "-")],
+    ["ราคา (สีเข้ม)", ...items.map(p=>p.price.dark ?? "-")],
+    ["ราคา (ท็อปดาย)", ...items.map(p=>p.price.top_dye ?? "-")],
+    ["Best Seller", ...items.map(p=>p.best_seller?"Yes":"-")],
+    ["คุณสมบัติเด่น", ...items.map(p=>p.benefit_tags.slice(0,4).map(b=>BENEFIT_LABELS[b]).join(", "))]
+  ];
+  let html = `<table class="compare-table"><thead><tr><th></th>${items.map(p=>`<th>${p.fabric_name}</th>`).join("")}</tr></thead><tbody>`;
+  rows.forEach(r=>{
+    html += `<tr><th>${r[0]}</th>${r.slice(1).map(v=>`<td class="mono-cell">${v}</td>`).join("")}</tr>`;
+  });
+  html += `</tbody></table><p style="font-size:12px;color:var(--ink-soft);margin-top:12px;">ราคายังไม่รวม VAT 7% และอาจมีค่าตัดเพิ่มหากสั่งซื้อต่ำกว่า 7 กก.</p>`;
+  document.getElementById("compareTableWrap").innerHTML = html;
+  openModal("compareModal");
+}
+
+function openDetail(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  document.getElementById("detailTitle").textContent = p.fabric_name;
+  document.getElementById("detailBody").innerHTML = `
+    <div class="detail-grid">
+      <div>
+        <p style="font-size:14px;color:var(--ink-soft);">${p.short_description}</p>
+        <div class="tag-list" style="margin-top:10px;">${p.benefit_tags.map(b=>`<span class="btag">${BENEFIT_LABELS[b]}</span>`).join("")}</div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+          <a class="btn btn-primary btn-sm" href="${p.website_url}" target="_blank" rel="noopener">เปิดหน้าเว็บไซต์ต้นฉบับ</a>
+          <a class="btn btn-ghost btn-sm" href="${p.catalog_url}" target="_blank" rel="noopener">โหลดแคตตาล็อก PDF</a>
+        </div>
+      </div>
+      <div>
+        <table class="compare-table">
+          <tbody>
+            <tr><th>Technology Group</th><td>${p.technology_group}</td></tr>
+            <tr><th>Composition</th><td class="mono-cell">${p.composition}</td></tr>
+            <tr><th>หน้าผ้า</th><td class="mono-cell">${p.width_inch} นิ้ว</td></tr>
+            <tr><th>น้ำหนัก (GSM)</th><td class="mono-cell">${p.gsm}</td></tr>
+            <tr><th>หลา/กก.</th><td class="mono-cell">${p.yard_per_kg}</td></tr>
+            <tr><th>ราคาสีขาว</th><td class="mono-cell">${p.price.white ?? "สอบถาม"}</td></tr>
+            <tr><th>ราคาสีอ่อน</th><td class="mono-cell">${p.price.light ?? "สอบถาม"}</td></tr>
+            <tr><th>ราคาสีกลาง</th><td class="mono-cell">${p.price.medium ?? "สอบถาม"}</td></tr>
+            <tr><th>ราคาสีเข้ม</th><td class="mono-cell">${p.price.dark ?? "สอบถาม"}</td></tr>
+            <tr><th>ราคาท็อปดาย</th><td class="mono-cell">${p.price.top_dye ?? "ไม่มีตัวเลือกนี้"}</td></tr>
+            <tr><th>Best Seller</th><td>${p.best_seller? "ใช่":"ไม่ใช่"}</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:11.5px;color:var(--ink-soft);margin-top:8px;">ราคายังไม่รวม VAT 7% · มีผล 20 พ.ย. 2568 · แหล่งที่มา: ${p.source_note}</p>
+      </div>
+    </div>`;
+  openModal("detailModal");
+}
+
+function openModal(id){ document.getElementById(id).classList.add("show"); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+document.querySelectorAll(".modal-overlay").forEach(m=>{
+  m.addEventListener("click", e=>{ if(e.target===m) m.classList.remove("show"); });
+});
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+function suggestAction(kind){
+  if(kind==="budget"){ state.budget_max = (state.budget_max||300)+100; document.getElementById("budgetInput").value = state.budget_max; }
+  if(kind==="color"){ state.color_group = null; }
+  if(kind==="benefits"){ state.benefits = state.benefits.slice(0, Math.max(0,state.benefits.length-1)); }
+  renderChipStates();
+  runSearch();
+}
+
+function clearAll(){
+  document.getElementById("nlInput").value="";
+  state = { category:"Polo / Uniform", benefits:[], color_group:null, budget_max:null, usage_context:[], best_seller_preferred:false, gsm_min:null, gsm_max:null, missing_information:[] };
+  document.getElementById("fCategory").value = "Polo / Uniform";
+  document.getElementById("budgetInput").value = "";
+  document.getElementById("gsmMin").value = "";
+  document.getElementById("gsmMax").value = "";
+  document.getElementById("bestSellerOnly").checked = false;
+  document.getElementById("missingInfoNote").style.display = "none";
+  document.getElementById("summaryBox").classList.remove("show");
+  renderChipStates();
+  document.getElementById("resultsRoot").classList.remove("show");
+  document.getElementById("noResult").classList.remove("show");
+}
+
+/* ---------------- browse tree ---------------- */
+function buildTree(){
+  const root = document.getElementById("treeRoot");
+  const groups = {};
+  PRODUCTS.forEach(p=>{ (groups[p.technology_group] = groups[p.technology_group]||[]).push(p); });
+
+  const catBox = document.createElement("div");
+  catBox.className = "tree-cat open";
+  catBox.innerHTML = `<div class="tree-cat-head" onclick="this.parentElement.classList.toggle('open')">
+      <h3>เสื้อโปโล / ยูนิฟอร์ม <span class="count">(${Object.keys(groups).length} กลุ่มเทคโนโลยีผ้า · ${PRODUCTS.length} รายการ)</span></h3>
+      <span class="chev">▾</span>
+    </div>
+    <div class="tree-groups" id="treeGroups"></div>`;
+  root.appendChild(catBox);
+  const groupsWrap = catBox.querySelector("#treeGroups");
+
+  Object.entries(groups).forEach(([groupName, items])=>{
+    const info = GROUP_INFO[groupName] || {};
+    const g = document.createElement("div");
+    g.className = "tree-group";
+    g.innerHTML = `
+      <div class="tree-group-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="name">🧵 ${groupName} <span class="count">(${items.length} รายการ)</span></span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="tree-group-body">
+        <p class="group-blurb">${info.blurb||""}</p>
+        <div class="group-catalog-all">
+          <a class="icon-btn catalog" href="${info.catalog}" target="_blank" rel="noopener">⬇ โหลดแคตตาล็อกกลุ่ม ${groupName}</a>
+          <a class="icon-btn" href="${info.url}" target="_blank" rel="noopener">📄 ดูข้อมูลผ้าเทคโนโลยีนี้</a>
+        </div>
+        <div class="fabric-list">
+          ${items.map(p=>`
+            <div class="fabric-row">
+              <div>
+                <div class="fname">${p.fabric_name}${p.best_seller? ' <span class="badge bestseller" style="margin-left:6px;">Best Seller</span>':''}</div>
+                <div class="fspec">${p.composition} · หน้าผ้า ${p.width_inch}" · ${p.gsm} GSM · ราคาเริ่มต้น ${Math.min(...Object.values(p.price).filter(v=>v!=null))} บาท/กก.</div>
+              </div>
+              <div class="row-actions">
+                <button class="icon-btn" onclick="openDetail('${p.id}')">สเปก</button>
+                <a class="icon-btn" href="${p.website_url}" target="_blank" rel="noopener">เว็บไซต์</a>
+                <a class="icon-btn catalog" href="${p.catalog_url}" target="_blank" rel="noopener">แคตตาล็อก</a>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>`;
+    groupsWrap.appendChild(g);
+  });
+}
+
+/* ---------------- boot ---------------- */
+initChips();
+renderChipStates();
+buildTree();
+</script>
+</body>
 </html>

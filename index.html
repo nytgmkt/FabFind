@@ -5,26 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FabFind — ค้นหาผ้าที่เหมาะกับงานของคุณ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1B2A3D;
-    --ink-soft:#42546b;
-    --canvas:#F0EAD9;
-    --canvas-2:#E4DBC4;
-    --card:#FBF8F1;
-    --card-line:#CDBE9F;
-    --rust:#B8451F;
-    --rust-dark:#8f350f;
-    --teal:#3F6E64;
-    --teal-soft:#e4ede9;
-    --gold:#C08A2E;
-    --gold-soft:#f6ecd3;
-    --danger:#8f351f;
-    --danger-soft:#f6e6de;
+    --ink:#1c1b1b;
+    --ink-soft:#444749;
+    --canvas:#fcf8f8;
+    --canvas-2:#F2F4F7;
+    --card:#ffffff;
+    --card-line:#c4c7c8;
+    --rust:#033BBD;
+    --rust-dark:#022a87;
+    --teal:#2850cf;
+    --teal-soft:#e8edfc;
+    --gold:#033BBD;
+    --gold-soft:#eaf0fd;
+    --danger:#ba1a1a;
+    --danger-soft:#fdeceb;
     --white:#fff;
-    --radius-tag: 4px 14px 14px 4px;
-    --shadow: 0 1px 0 rgba(27,42,61,.05), 0 8px 20px -12px rgba(27,42,61,.35);
+    --radius-tag: 8px;
+    --shadow: 0 4px 20px rgba(0,0,0,.04);
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -32,12 +32,13 @@
     margin:0;
     background:var(--canvas);
     color:var(--ink);
-    font-family:'Sarabun',sans-serif;
+    font-family:'Hanken Grotesk',sans-serif;
     font-size:16px;
     line-height:1.55;
   }
   h1,h2,h3,h4,.display{
-    font-family:'Kanit',sans-serif;
+    font-family:'Hanken Grotesk',sans-serif;
+    font-weight:700;
     color:var(--ink);
     margin:0;
   }
@@ -71,7 +72,7 @@
     position:relative; flex:none;
   }
   .logo-mark svg{ width:20px; height:20px; }
-  .logo-text{ font-family:'Kanit'; font-weight:700; font-size:20px; letter-spacing:.2px; }
+  .logo-text{ font-family:'Hanken Grotesk'; font-weight:800; font-size:20px; letter-spacing:.2px; }
   .logo-text span{ color:var(--rust); }
   .logo-sub{ font-size:11px; color:var(--ink-soft); margin-top:-2px; letter-spacing:.4px; }
   .site-cta{
@@ -93,7 +94,7 @@
   .hero-tagline{
     display:inline-flex; align-items:center; gap:8px;
     font-size:12.5px; font-weight:600; letter-spacing:.5px;
-    color:var(--rust); background:#fbe4d8; border:1px solid #eec3ac;
+    color:var(--rust); background:var(--gold-soft); border:1px solid #c7d6f9;
     padding:5px 12px; border-radius:999px; margin-bottom:18px;
   }
   .hero h1{
@@ -105,32 +106,33 @@
   }
 
   .search-card{
-    margin-top:32px; background:var(--card); border:1px solid var(--card-line);
-    border-radius:18px; box-shadow:var(--shadow); padding:22px;
+    margin-top:32px; background:rgba(255,255,255,0.8); backdrop-filter:blur(12px); border:1px solid var(--card-line);
+    border-radius:12px; box-shadow:var(--shadow); padding:22px;
   }
   .tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
   .tab-btn{
-    background:transparent; border:1px solid transparent; border-radius:10px;
+    background:transparent; border:1px solid transparent; border-radius:8px;
     padding:9px 14px; font-size:14.5px; font-weight:600; color:var(--ink-soft);
   }
   .tab-btn.active{ background:var(--ink); color:#fff; }
   .tab-btn:not(.active):hover{ background:var(--canvas-2); }
 
   textarea#nlInput{
-    width:100%; resize:vertical; min-height:78px; border-radius:12px;
-    border:1.5px solid var(--card-line); padding:14px 16px; font-family:'Sarabun';
+    width:100%; resize:vertical; min-height:78px; border-radius:8px;
+    border:1.5px solid var(--card-line); padding:14px 16px; font-family:'Hanken Grotesk';
     font-size:15.5px; background:#fff; color:var(--ink);
   }
-  textarea#nlInput:focus{ outline:none; border-color:var(--ink); }
+  textarea#nlInput:focus{ outline:none; border-color:var(--rust); box-shadow:0 0 0 3px rgba(3,59,189,.12); }
   .search-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
   .btn{
-    border:none; border-radius:10px; padding:12px 20px; font-weight:600; font-size:15px;
-    display:inline-flex; align-items:center; gap:8px;
+    border:none; border-radius:8px; padding:12px 20px; font-weight:600; font-size:15px;
+    display:inline-flex; align-items:center; gap:8px; transition:all .15s ease;
   }
   .btn-primary{ background:var(--rust); color:#fff; }
   .btn-primary:hover{ background:var(--rust-dark); }
+  .btn-primary:active{ transform:scale(.97); }
   .btn-ghost{ background:transparent; color:var(--ink); border:1.5px solid var(--card-line); }
-  .btn-ghost:hover{ border-color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--rust); color:var(--rust); }
   .btn-sm{ padding:8px 13px; font-size:13.5px; border-radius:8px; }
   .hint{ font-size:12.5px; color:var(--ink-soft); margin-top:10px; }
 
@@ -142,7 +144,7 @@
   }
   .crumb b{ color:var(--ink); }
   .tree-cat{
-    border:1px solid var(--card-line); border-radius:14px; background:#fff; margin-bottom:12px; overflow:hidden;
+    border:1px solid var(--card-line); border-radius:8px; background:#fff; margin-bottom:12px; overflow:hidden;
   }
   .tree-cat-head{
     display:flex; align-items:center; justify-content:space-between;
@@ -167,7 +169,7 @@
   .tree-group.open .chev{ transform:rotate(180deg); }
   .fabric-row{
     display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:9px 0; border-bottom:1px solid #efe9da; font-size:14px;
+    padding:9px 0; border-bottom:1px solid var(--canvas-2); font-size:14px;
   }
   .fabric-row:last-child{ border-bottom:none; }
   .fabric-row .fname{ font-weight:500; }
@@ -186,7 +188,7 @@
   /* ---------- filters ---------- */
   section.filters{ padding:26px 0 6px; }
   .filters-panel{
-    background:var(--card); border:1px solid var(--card-line); border-radius:18px; padding:22px;
+    background:var(--card); border:1px solid var(--card-line); border-radius:12px; padding:22px;
   }
   .filters-title{ display:flex; align-items:center; justify-content:between; gap:8px; margin-bottom:16px; }
   .filters-title h2{ font-size:18px; font-weight:600; }
@@ -199,20 +201,20 @@
     text-transform:uppercase; letter-spacing:.4px; margin-bottom:9px;
   }
   select.fselect{
-    width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid var(--card-line);
-    background:#fff; font-family:'Sarabun'; font-size:14.5px; color:var(--ink);
+    width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--card-line);
+    background:#fff; font-family:'Hanken Grotesk'; font-size:14.5px; color:var(--ink);
   }
   .chip-set{ display:flex; flex-wrap:wrap; gap:7px; }
   .chip{
     border:1.5px solid var(--card-line); background:#fff; border-radius:999px;
-    padding:6px 12px; font-size:13px; color:var(--ink-soft); user-select:none;
+    padding:6px 12px; font-size:13px; color:var(--ink-soft); user-select:none; transition:all .15s ease;
   }
-  .chip.selected{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .chip.selected{ background:var(--gold-soft); border-color:var(--rust); color:var(--rust); font-weight:600; }
   .chip.color-chip{ display:inline-flex; align-items:center; gap:7px; }
   .swatch-dot{ width:13px; height:13px; border-radius:50%; border:1px solid rgba(0,0,0,.15); flex:none; }
   .budget-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   input.budget-input{
-    width:100px; padding:9px 10px; border-radius:9px; border:1.5px solid var(--card-line);
+    width:100px; padding:9px 10px; border-radius:8px; border:1.5px solid var(--card-line);
     font-family:'JetBrains Mono'; font-size:14px;
   }
   .adv-toggle{
@@ -227,8 +229,8 @@
 
   /* ---------- summary ---------- */
   #summaryBox{
-    margin-top:24px; padding:16px 20px; border-radius:14px; background:var(--gold-soft);
-    border:1px solid #e6d2a0; font-size:14.5px; display:none; align-items:flex-start; gap:10px;
+    margin-top:24px; padding:16px 20px; border-radius:8px; background:var(--gold-soft);
+    border:1px solid #c7d6f9; font-size:14.5px; display:none; align-items:flex-start; gap:10px;
   }
   #summaryBox.show{ display:flex; }
   #summaryBox .dot{ width:8px; height:8px; border-radius:50%; background:var(--gold); margin-top:7px; flex:none; }
@@ -246,26 +248,22 @@
   @media(max-width:980px){ .cards-grid{ grid-template-columns:repeat(2,1fr);} }
   @media(max-width:640px){ .cards-grid{ grid-template-columns:1fr;} }
 
-  /* swatch-tag card (signature element) */
+  /* fabric card */
   .tag-card{
     position:relative; background:var(--card); border:1px solid var(--card-line);
-    border-radius: var(--radius-tag); padding:22px 20px 18px 26px; box-shadow:var(--shadow);
-    display:flex; flex-direction:column; gap:12px;
+    border-radius: var(--radius-tag); padding:20px; box-shadow:var(--shadow);
+    display:flex; flex-direction:column; gap:12px; transition:all .3s ease;
   }
-  .tag-card::before{
-    /* punch hole */
-    content:""; position:absolute; left:10px; top:22px; width:9px; height:9px;
-    border-radius:50%; background:var(--canvas); border:1.4px solid var(--card-line);
-  }
-  .tag-card.top-pick{ border-color:var(--rust); box-shadow:0 1px 0 rgba(184,69,31,.08), 0 10px 26px -14px rgba(184,69,31,.55); }
+  .tag-card:hover{ box-shadow:0 12px 30px rgba(0,0,0,0.08); transform:translateY(-4px); }
+  .tag-card.top-pick{ border-color:var(--rust); box-shadow:0 1px 0 rgba(3,59,189,.08), 0 10px 26px -14px rgba(3,59,189,.45); }
   .tag-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-  .tag-name{ font-family:'Kanit'; font-size:18px; font-weight:600; line-height:1.25; }
+  .tag-name{ font-family:'Hanken Grotesk'; font-size:18px; font-weight:700; line-height:1.25; }
   .tag-group{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
   .badges{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex:none; }
-  .badge{ font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; letter-spacing:.2px; white-space:nowrap; }
+  .badge{ font-size:10px; font-weight:700; padding:4px 8px; border-radius:4px; letter-spacing:.4px; white-space:nowrap; text-transform:uppercase; }
   .badge.top{ background:var(--rust); color:#fff; }
-  .badge.bestseller{ background:var(--gold-soft); color:var(--gold); border:1px solid #e6d2a0; }
-  .badge.over{ background:var(--danger-soft); color:var(--danger); border:1px solid #e6c3b4; }
+  .badge.bestseller{ background:var(--ink); color:#fff; }
+  .badge.over{ background:var(--danger-soft); color:var(--danger); border:1px solid #f3c6c2; }
 
   .why-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:5px; }
   .why-list li{ font-size:13px; color:var(--ink-soft); display:flex; gap:7px; }
@@ -276,7 +274,7 @@
   }
   .price-num{ font-family:'JetBrains Mono'; font-size:26px; font-weight:700; color:var(--ink); }
   .price-unit{ font-size:12.5px; color:var(--ink-soft); }
-  .price-color-tag{ margin-left:auto; font-size:11.5px; color:var(--ink-soft); background:var(--canvas-2); padding:3px 8px; border-radius:6px; }
+  .price-color-tag{ margin-left:auto; font-size:11.5px; color:var(--ink-soft); background:var(--canvas-2); padding:3px 8px; border-radius:4px; }
 
   .spec-mini{ display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; font-size:12.5px; }
   .spec-mini div{ display:flex; justify-content:space-between; gap:6px; color:var(--ink-soft); }
@@ -288,7 +286,7 @@
   .tag-actions{ display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
   .compare-check{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
 
-  #noResult{ display:none; text-align:center; padding:40px 20px; background:var(--card); border:1px dashed var(--card-line); border-radius:16px; }
+  #noResult{ display:none; text-align:center; padding:40px 20px; background:var(--card); border:1px dashed var(--card-line); border-radius:12px; }
   #noResult.show{ display:block; }
   #noResult h3{ font-size:18px; margin-bottom:8px; }
   #noResult p{ color:var(--ink-soft); font-size:14px; max-width:48ch; margin:0 auto 16px; }
@@ -299,16 +297,16 @@
 
   /* ---------- disclaimer ---------- */
   .disclaimer{
-    margin:44px 0 0; background:var(--danger-soft); border:1px solid #e6c3b4; border-radius:16px; padding:20px 22px;
+    margin:44px 0 0; background:var(--danger-soft); border:1px solid #f3c6c2; border-radius:12px; padding:20px 22px;
   }
   .disclaimer h4{ font-size:14.5px; color:var(--danger); font-weight:700; margin-bottom:8px; display:flex; gap:8px; align-items:center; }
-  .disclaimer ul{ margin:8px 0 0; padding-left:18px; font-size:13px; color:#6d2c1c; }
+  .disclaimer ul{ margin:8px 0 0; padding-left:18px; font-size:13px; color:#7a1414; }
   .disclaimer ul li{ margin-bottom:4px; }
-  .disclaimer .note{ font-size:12.5px; color:#6d2c1c; margin-top:10px; }
+  .disclaimer .note{ font-size:12.5px; color:#7a1414; margin-top:10px; }
 
   /* ---------- contact cta ---------- */
   .contact-cta{
-    margin:40px 0; background:var(--ink); color:#fff; border-radius:20px; padding:36px 32px;
+    margin:40px 0; background:var(--ink); color:#fff; border-radius:12px; padding:36px 32px;
     display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
   }
   .contact-cta h3{ color:#fff; font-size:22px; font-weight:600; max-width:26ch; }
@@ -324,29 +322,30 @@
   /* ---------- compare bar & modal ---------- */
   .compare-bar{
     position:fixed; left:50%; bottom:20px; transform:translateX(-50%) translateY(120%);
-    background:var(--ink); color:#fff; padding:12px 14px 12px 18px; border-radius:14px;
-    display:flex; align-items:center; gap:14px; box-shadow:0 14px 30px -10px rgba(0,0,0,.4);
+    background:rgba(255,255,255,0.85); backdrop-filter:blur(20px); border:1px solid var(--card-line);
+    color:var(--ink); padding:12px 14px 12px 18px; border-radius:12px;
+    display:flex; align-items:center; gap:14px; box-shadow:0 14px 30px -10px rgba(0,0,0,.15);
     transition:transform .25s ease; z-index:50; max-width:92vw;
   }
   .compare-bar.show{ transform:translateX(-50%) translateY(0); }
-  .compare-bar span{ font-size:13.5px; }
+  .compare-bar span{ font-size:13.5px; font-weight:600; }
   .modal-overlay{
-    position:fixed; inset:0; background:rgba(27,42,61,.55); display:none; align-items:center; justify-content:center; z-index:60; padding:20px;
+    position:fixed; inset:0; background:rgba(28,27,27,.55); display:none; align-items:center; justify-content:center; z-index:60; padding:20px;
   }
   .modal-overlay.show{ display:flex; }
   .modal-box{
-    background:#fff; border-radius:18px; max-width:920px; width:100%; max-height:86vh; overflow:auto; padding:26px;
+    background:#fff; border-radius:12px; max-width:920px; width:100%; max-height:86vh; overflow:auto; padding:26px;
   }
   .modal-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
   .modal-close{ background:var(--canvas-2); border:none; border-radius:8px; width:32px; height:32px; font-size:16px; }
   table.compare-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
   table.compare-table th, table.compare-table td{ border:1px solid var(--card-line); padding:9px 10px; text-align:left; vertical-align:top; }
-  table.compare-table th{ background:var(--canvas-2); font-family:'Kanit'; }
+  table.compare-table th{ background:var(--canvas-2); font-family:'Hanken Grotesk'; }
   table.compare-table td.mono-cell{ font-family:'JetBrains Mono'; }
 
   .toast{
     position:fixed; right:20px; bottom:20px; background:var(--ink); color:#fff; padding:12px 18px;
-    border-radius:10px; font-size:13.5px; transform:translateY(120%); transition:transform .25s ease; z-index:70;
+    border-radius:8px; font-size:13.5px; transform:translateY(120%); transition:transform .25s ease; z-index:70;
   }
   .toast.show{ transform:translateY(0); }
 
@@ -362,7 +361,7 @@
     <div class="logo">
       <div class="logo-mark">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 8 L12 3 L21 8 L21 10 L17 8 L17 21 L7 21 L7 8 L3 10 Z" stroke="#F0EAD9" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M3 8 L12 3 L21 8 L21 10 L17 8 L17 21 L7 21 L7 8 L3 10 Z" stroke="#fcf8f8" stroke-width="1.6" stroke-linejoin="round"/>
         </svg>
       </div>
       <div>
@@ -496,7 +495,7 @@
 
       <div class="disclaimer">
         <h4>⚠ ข้อควรทราบเรื่องราคา</h4>
-        <p style="font-size:13px;color:#6d2c1c;margin:0;">ราคานี้เป็นราคาเบื้องต้นจากใบราคาที่ได้รับอนุมัติ และยังไม่รวม VAT 7% กรุณาตรวจสอบราคา สต็อก สี และเงื่อนไขการขายกับเจ้าหน้าที่ก่อนสั่งซื้อ</p>
+        <p style="font-size:13px;color:#7a1414;margin:0;">ราคานี้เป็นราคาเบื้องต้นจากใบราคาที่ได้รับอนุมัติ และยังไม่รวม VAT 7% กรุณาตรวจสอบราคา สต็อก สี และเงื่อนไขการขายกับเจ้าหน้าที่ก่อนสั่งซื้อ</p>
         <ul>
           <li>ราคายังไม่รวม VAT 7%</li>
           <li>สั่งซื้อ 7 กิโลกรัมขึ้นไป (ไม่บวกค่าตัด)</li>
@@ -529,14 +528,14 @@
 
 <div class="compare-bar" id="compareBar">
   <span id="compareCount">เลือกไว้ 0 รายการ</span>
-  <button class="btn btn-light btn-sm" onclick="openCompare()">เปรียบเทียบ</button>
-  <button class="icon-btn" style="background:transparent;border-color:rgba(255,255,255,.3);color:#fff;" onclick="clearCompare()">ล้าง</button>
+  <button class="btn btn-primary btn-sm" onclick="openCompare()">เปรียบเทียบ</button>
+  <button class="icon-btn" onclick="clearCompare()">ล้าง</button>
 </div>
 
 <div class="modal-overlay" id="compareModal">
   <div class="modal-box">
     <div class="modal-head">
-      <h3 style="font-family:Kanit;font-size:18px;">เปรียบเทียบผ้า</h3>
+      <h3 style="font-family:'Hanken Grotesk';font-weight:700;font-size:18px;">เปรียบเทียบผ้า</h3>
       <button class="modal-close" onclick="closeModal('compareModal')">✕</button>
     </div>
     <div id="compareTableWrap"></div>
@@ -546,7 +545,7 @@
 <div class="modal-overlay" id="detailModal">
   <div class="modal-box">
     <div class="modal-head">
-      <h3 id="detailTitle" style="font-family:Kanit;font-size:20px;"></h3>
+      <h3 id="detailTitle" style="font-family:'Hanken Grotesk';font-weight:700;font-size:20px;"></h3>
       <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
     </div>
     <div id="detailBody"></div>
